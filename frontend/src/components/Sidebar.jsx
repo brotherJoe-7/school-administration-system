@@ -47,7 +47,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
-      <div className="sidebar-logo">
+      {/* Logo */}
+      <div className="sidebar-logo" style={{ flexShrink: 0 }}>
         <div className="sidebar-logo-icon">SAS</div>
         <div className="sidebar-logo-text">
           <h2>School Administration System</h2>
@@ -55,11 +56,12 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
       </div>
 
+      {/* Nav — scrollable */}
       <nav className="sidebar-nav">
         <div className="nav-section-label">Navigation</div>
         {navItems.map((item) => (
           <NavLink
-            key={item.path}
+            key={item.path + item.label}
             to={item.path}
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             onClick={onClose}
@@ -69,7 +71,8 @@ export default function Sidebar({ isOpen, onClose }) {
         ))}
       </nav>
 
-      <div className="sidebar-footer">
+      {/* Footer — always pinned at bottom */}
+      <div className="sidebar-footer" style={{ flexShrink: 0 }}>
         <div className="user-pill" style={{ marginBottom: '8px' }}>
           <div className="user-avatar">{initials}</div>
           <div className="user-info">
