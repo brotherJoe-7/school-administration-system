@@ -3,11 +3,11 @@ import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
 import toast from 'react-hot-toast';
 
-const PROGRAMS = ['BIT','BBIT','BSEM','BICT','DAT','BSc CS','BBA MIS','Diploma ICT','HND Computing'];
 
 export default function ClassesPage() {
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [programsList, setProgramsList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ class_name:'', class_code:'', teacher_id:'', program:'', credit_hours:3, semester:'', schedule:'' });
@@ -16,9 +16,11 @@ export default function ClassesPage() {
     Promise.all([
       API.get('/classes'),
       API.get('/teachers'),
-    ]).then(([c, t]) => {
+      API.get('/classes/programs'),
+    ]).then(([c, t, p]) => {
       setClasses(c.data.data || []);
       setTeachers(t.data.data || []);
+      setProgramsList(p.data.data || []);
     }).catch(() => toast.error('Failed to load classes'))
       .finally(() => setLoading(false));
   }, []);
@@ -102,7 +104,7 @@ export default function ClassesPage() {
                     <select className="form-select" required value={form.program}
                       onChange={e=>setForm(f=>({...f,program:e.target.value}))}>
                       <option value="">Select</option>
-                      {PROGRAMS.map(p=><option key={p} value={p}>{p}</option>)}
+                      {programsList.map(p=><option key={p} value={p}>{p}</option>)}
                     </select>
                   </div>
                   <div className="form-group">

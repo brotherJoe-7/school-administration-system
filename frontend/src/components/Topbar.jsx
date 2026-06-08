@@ -1,16 +1,25 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 
-export default function Topbar({ title }) {
+export default function Topbar({ title, onToggleSidebar }) {
   const { user } = useAuth();
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-SL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
     <header className="topbar">
-      <div>
-        <div className="topbar-title">{title}</div>
-        <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{dateStr}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button className="topbar-menu-btn" onClick={onToggleSidebar} aria-label="Toggle Navigation">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div>
+          <div className="topbar-title">{title}</div>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '2px' }}>{dateStr}</p>
+        </div>
       </div>
       <div className="topbar-right">
         <div style={{

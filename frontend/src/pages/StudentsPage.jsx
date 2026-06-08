@@ -4,7 +4,6 @@ import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
 import toast from 'react-hot-toast';
 
-const PROGRAMS = ['BIT', 'BBIT', 'BSEM', 'BICT', 'DAT', 'BSc CS', 'BBA MIS', 'Diploma ICT', 'HND Computing'];
 
 const StatusBadge = ({ status }) => {
   const map = { active:'success', pending:'warning', suspended:'danger', graduated:'info' };
@@ -19,6 +18,13 @@ export default function StudentsPage() {
   const [program, setProgram] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
+  const [programsList, setProgramsList] = useState([]);
+
+  useEffect(() => {
+    API.get('/classes/programs')
+      .then(res => setProgramsList(res.data.data || []))
+      .catch(() => setProgramsList(['BIT','BBIT','BSEM','BICT','DAT','BSc CS','BBA MIS','Diploma ICT','HND Computing']));
+  }, []);
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -60,7 +66,7 @@ export default function StudentsPage() {
             <label className="form-label">Program</label>
             <select className="form-select" value={program} onChange={e => { setProgram(e.target.value); setPage(1); }}>
               <option value="">All Programs</option>
-              {PROGRAMS.map(p => <option key={p} value={p}>{p}</option>)}
+              {programsList.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </div>
           <div className="form-group">

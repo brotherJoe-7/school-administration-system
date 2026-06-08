@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from './Sidebar';
@@ -6,6 +6,7 @@ import Topbar from './Topbar';
 
 export default function ProtectedLayout({ children, title, allowedRoles }) {
   const { user, loading, isAuthenticated } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -22,9 +23,10 @@ export default function ProtectedLayout({ children, title, allowedRoles }) {
 
   return (
     <div className="app-layout">
-      <Sidebar />
+      <div className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`} onClick={() => setSidebarOpen(false)} />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="main-content">
-        <Topbar title={title} />
+        <Topbar title={title} onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
         <main className="page-body">
           {children}
         </main>

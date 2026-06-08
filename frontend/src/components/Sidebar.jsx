@@ -30,7 +30,7 @@ const NAV_ITEMS = {
   ],
 };
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-logo">
         <div className="sidebar-logo-icon">SAS</div>
         <div className="sidebar-logo-text">
@@ -62,6 +62,7 @@ export default function Sidebar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            onClick={onClose}
           >
             {item.label}
           </NavLink>
