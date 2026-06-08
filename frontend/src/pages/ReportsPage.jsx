@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
 import { useAuth } from '../context/AuthContext';
@@ -8,29 +7,37 @@ import toast from 'react-hot-toast';
 const gradeColor = (g) => {
   if (!g) return 'var(--color-text-muted)';
   if (g.startsWith('A')) return 'var(--color-success)';
-  if (g.startsWith('B')) return 'var(--color-info)';
+  if (g.startsWith('B')) return 'var(--color-info, #3b82f6)';
   if (g.startsWith('C')) return 'var(--color-warning)';
   return 'var(--color-danger)';
 };
 
+const gpaColor = (gpa) => {
+  const v = parseFloat(gpa);
+  if (v >= 3.5) return 'var(--color-success)';
+  if (v >= 2.5) return 'var(--color-warning)';
+  return 'var(--color-danger)';
+};
+
+const GRADES = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','F'];
+
 export default function ReportsPage() {
   const { user } = useAuth();
-  const { studentId: paramId } = useParams();
-  const [transcriptId, setTranscriptId] = useState(paramId || (user?.role === 'student' ? user.id : ''));
+  const [transcriptId, setTranscriptId] = useState(user?.role === 'student' ? user.id : '');
   const [transcript, setTranscript] = useState(null);
   const [loading, setLoading] = useState(false);
   const [students, setStudents] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [gradeForm, setGradeForm] = useState({ student_id:'', class_id:'', semester:'', grade:'', score:'', comments:'' });
-  const [classes, setClasses] = useState([]);
   const [requesting, setRequesting] = useState(false);
 
   useEffect(() => {
     if (user?.role !== 'student') {
-      API.get('/students?limit=100&status=active').then(r => setStudents(r.data.data || [])).catch(() => {});
+      API.get('/students?limit=200&status=active').then(r => setStudents(r.data.data || [])).catch(() => {});
       API.get('/classes').then(r => setClasses(r.data.data || [])).catch(() => {});
     }
-    if (transcriptId) loadTranscript(transcriptId);
+    if (user?.role === 'student' && user.id) loadTranscript(user.id);
   }, [user]);
 
   const loadTranscript = async (id) => {
@@ -53,6 +60,7 @@ export default function ReportsPage() {
       await API.post('/reports/cards', gradeForm);
       toast.success('Grade recorded successfully');
       setShowGradeModal(false);
+      setGradeForm({ student_id:'', class_id:'', semester:'', grade:'', score:'', comments:'' });
       if (gradeForm.student_id === transcriptId) loadTranscript(transcriptId);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to record grade');
@@ -71,169 +79,163 @@ export default function ReportsPage() {
     }
   };
 
-  // Export CSV
   const exportCSV = () => {
     if (!transcript) return;
     const { student, semesters } = transcript;
-    
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += `Student Name,${student.first_name} ${student.last_name}\n`;
-    csvContent += `Student Number,${student.student_number}\n`;
-    csvContent += `Program,${student.program || 'N/A'}\n`;
-    csvContent += `Cumulative GPA,${transcript.cumulative_gpa}\n`;
-    csvContent += `Total Credits,${transcript.total_credits}\n\n`;
-    csvContent += "Semester,Class Code,Class Name,Credits,Score,Grade,Comments\n";
-
+    let csv = `data:text/csv;charset=utf-8,`;
+    csv += `Student Name,${student.first_name} ${student.last_name}\n`;
+    csv += `Student Number,${student.student_number}\n`;
+    csv += `Program,${student.program || 'N/A'}\n`;
+    csv += `Cumulative GPA,${transcript.cumulative_gpa}\n`;
+    csv += `Total Credits,${transcript.total_credits}\n\n`;
+    csv += `Semester,Class Code,Class Name,Credits,Score,Grade,Comments\n`;
     Object.entries(semesters).forEach(([sem, data]) => {
       data.grades.forEach(g => {
-        const row = [
-          sem,
-          g.class_code,
-          `"${g.class_name.replace(/"/g, '""')}"`,
-          g.credit_hours,
-          g.score ? `${g.score}%` : '—',
-          g.grade || '—',
-          `"${(g.comments || '').replace(/"/g, '""')}"`
-        ].join(",");
-        csvContent += row + "\n";
+        csv += [sem, g.class_code, `"${(g.class_name||'').replace(/"/g,'""')}"`,
+          g.credit_hours, g.score ? `${g.score}%` : '—', g.grade || '—',
+          `"${(g.comments||'').replace(/"/g,'""')}"`].join(',') + '\n';
       });
     });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Transcript_${student.student_number}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const link = document.createElement('a');
+    link.href = encodeURI(csv);
+    link.download = `Transcript_${student.student_number}.csv`;
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
   };
 
-  // Export PDF (Print View)
   const exportPDF = () => {
     if (!transcript) return;
     const { student, semesters } = transcript;
-    const printWindow = window.open('', '_blank');
-    
-    let semestersHtml = '';
-    Object.entries(semesters).forEach(([sem, data]) => {
-      let gradesRows = '';
-      data.grades.forEach(g => {
-        gradesRows += `
-          <tr>
-            <td>${g.class_code}</td>
-            <td>${g.class_name}</td>
-            <td>${g.credit_hours}</td>
-            <td>${g.score ? g.score + '%' : '—'}</td>
-            <td><strong>${g.grade || '—'}</strong></td>
-          </tr>
-        `;
-      });
+    const now = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' });
 
-      semestersHtml += `
-        <div class="semester-section">
-          <h3>Semester: ${sem} (GPA: ${data.gpa}, Credits: ${data.total_credits})</h3>
-          <table>
+    let semHtml = '';
+    Object.entries(semesters).forEach(([sem, data]) => {
+      let rows = data.grades.map(g => `
+        <tr>
+          <td style="font-weight:600">${g.class_code || '—'}</td>
+          <td>${g.class_name || '—'}</td>
+          <td style="text-align:center">${g.credit_hours}</td>
+          <td style="text-align:center">${g.score != null ? g.score + '%' : '—'}</td>
+          <td style="text-align:center;font-weight:800;font-size:15px">${g.grade || '—'}</td>
+        </tr>`).join('');
+      semHtml += `
+        <div style="margin-bottom:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid #000;padding-bottom:5px;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Semester: ${sem}</span>
+            <span style="font-size:12px">Semester GPA: <strong>${data.gpa}</strong> &nbsp;|&nbsp; Credits: <strong>${data.total_credits}</strong></span>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
             <thead>
-              <tr>
-                <th>Code</th>
-                <th>Course Name</th>
-                <th>Credits</th>
-                <th>Score</th>
-                <th>Grade</th>
+              <tr style="background:#f0f0f0">
+                <th style="padding:7px 10px;font-size:11px;text-align:left;text-transform:uppercase;border-bottom:1px solid #ccc">Code</th>
+                <th style="padding:7px 10px;font-size:11px;text-align:left;text-transform:uppercase;border-bottom:1px solid #ccc">Course Name</th>
+                <th style="padding:7px 10px;font-size:11px;text-align:center;text-transform:uppercase;border-bottom:1px solid #ccc">Cr. Hrs</th>
+                <th style="padding:7px 10px;font-size:11px;text-align:center;text-transform:uppercase;border-bottom:1px solid #ccc">Score</th>
+                <th style="padding:7px 10px;font-size:11px;text-align:center;text-transform:uppercase;border-bottom:1px solid #ccc">Grade</th>
               </tr>
             </thead>
-            <tbody>
-              ${gradesRows}
-            </tbody>
+            <tbody>${rows}</tbody>
           </table>
-        </div>
-      `;
+        </div>`;
     });
 
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Academic Transcript - ${student.student_number}</title>
-          <style>
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #000; padding: 40px; }
-            h1 { font-size: 24px; text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-            .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-            .meta-item { font-size: 14px; margin-bottom: 5px; }
-            .gpa-card { background: #f4f4f5; padding: 15px; border: 1px solid #e4e4e7; border-radius: 4px; text-align: center; }
-            .gpa-val { font-size: 28px; font-weight: 800; }
-            .semester-section { margin-bottom: 30px; }
-            h3 { font-size: 16px; margin-bottom: 10px; border-bottom: 1px solid #e4e4e7; padding-bottom: 5px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { text-align: left; padding: 8px; font-size: 13px; border-bottom: 1px solid #e4e4e7; }
-            th { background: #f4f4f5; font-weight: bold; }
-            @media print {
-              body { padding: 0; }
-            }
-          </style>
-        </head>
-        <body>
-          <h1>Official Academic Transcript</h1>
-          <div class="meta-grid">
-            <div>
-              <div class="meta-item"><strong>Student Name:</strong> ${student.first_name} ${student.last_name}</div>
-              <div class="meta-item"><strong>Student ID:</strong> ${student.student_number}</div>
-              <div class="meta-item"><strong>Program:</strong> ${student.program || 'N/A'}</div>
-              <div class="meta-item"><strong>Nationality:</strong> ${student.nationality || 'Sierra Leonean'}</div>
-            </div>
-            <div class="gpa-card">
-              <div class="gpa-val">${transcript.cumulative_gpa}</div>
-              <div style="font-size: 11px; text-transform: uppercase; color: #71717a;">Cumulative GPA</div>
-              <div style="font-size: 13px; font-weight: bold; margin-top: 5px;">Total Credits: ${transcript.total_credits}</div>
-            </div>
-          </div>
-          ${semestersHtml}
-          <div style="margin-top: 50px; border-top: 1px solid #000; padding-top: 10px; font-size: 11px; text-align: center; color: #71717a;">
-            School Administration System · Verified Academic Record
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-              window.onafterprint = function() { window.close(); }
-            }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
+    const w = window.open('', '_blank');
+    w.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Official Transcript – ${student.student_number}</title>
+  <style>
+    @page { size: A4; margin: 18mm 15mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; font-size: 13px; }
+    td, th { padding: 7px 10px; border-bottom: 1px solid #ddd; }
+    tbody tr:nth-child(even) { background: #fafafa; }
+    @media print { body { -webkit-print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div style="text-align:center;border-bottom:3px double #000;padding-bottom:14px;margin-bottom:18px">
+    <div style="font-size:22px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase">School Administration System</div>
+    <div style="font-size:12px;color:#444;margin-top:3px">Institutional Academic Registry · Sierra Leone</div>
+    <div style="font-size:17px;font-weight:700;margin-top:10px;text-transform:uppercase;letter-spacing:0.1em;border-top:1px solid #ccc;padding-top:10px">Official Academic Transcript</div>
+  </div>
 
-  const GRADES = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','F'];
+  <div style="display:flex;justify-content:space-between;margin-bottom:18px;gap:20px">
+    <table style="font-size:12.5px;border-collapse:collapse;flex:1">
+      <tr><td style="padding:4px 8px 4px 0;color:#555;border:none;white-space:nowrap">Student Name</td><td style="padding:4px 0;font-weight:700;border:none">${student.first_name} ${student.last_name}</td></tr>
+      <tr><td style="padding:4px 8px 4px 0;color:#555;border:none;white-space:nowrap">Student ID</td><td style="padding:4px 0;font-weight:600;border:none">${student.student_number}</td></tr>
+      <tr><td style="padding:4px 8px 4px 0;color:#555;border:none;white-space:nowrap">Program</td><td style="padding:4px 0;border:none">${student.program || 'N/A'}</td></tr>
+      <tr><td style="padding:4px 8px 4px 0;color:#555;border:none;white-space:nowrap">Year of Study</td><td style="padding:4px 0;border:none">${student.year_of_study || '—'}</td></tr>
+      <tr><td style="padding:4px 8px 4px 0;color:#555;border:none;white-space:nowrap">Nationality</td><td style="padding:4px 0;border:none">${student.nationality || 'Sierra Leonean'}</td></tr>
+      <tr><td style="padding:4px 8px 4px 0;color:#555;border:none;white-space:nowrap">Date Issued</td><td style="padding:4px 0;border:none">${now}</td></tr>
+    </table>
+    <div style="border:2px solid #000;border-radius:6px;padding:14px 22px;text-align:center;min-width:160px">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#555;margin-bottom:4px">Cumulative GPA</div>
+      <div style="font-size:36px;font-weight:900">${transcript.cumulative_gpa}</div>
+      <div style="font-size:11px;margin-top:6px;border-top:1px solid #ccc;padding-top:6px">
+        Total Credits: <strong>${transcript.total_credits}</strong>
+      </div>
+      <div style="font-size:11px;margin-top:4px">
+        Attendance: <strong>${transcript.attendance_percentage}%</strong>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top:2px solid #000;padding-top:16px;margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Academic Record</div>
+
+  ${semHtml || '<p style="color:#888;font-style:italic">No grades recorded.</p>'}
+
+  <div style="margin-top:40px;border-top:1px solid #000;padding-top:14px;display:flex;justify-content:space-between;font-size:11px">
+    <div>
+      <div style="margin-bottom:30px">Registrar's Signature: ______________________</div>
+      <div>Date: ______________________</div>
+    </div>
+    <div style="text-align:right;color:#555">
+      <div>School Administration System</div>
+      <div>Official Academic Record</div>
+      <div style="margin-top:4px;font-size:10px">Generated: ${now}</div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;border-top:1px dashed #aaa;padding-top:8px;font-size:10px;color:#888;text-align:center">
+    CONFIDENTIAL — This transcript is only valid with the official stamp and signature of the Registrar.
+  </div>
+
+  <script>window.onload=function(){window.print();window.onafterprint=function(){window.close();}}</script>
+</body>
+</html>`);
+    w.document.close();
+  };
 
   return (
     <ProtectedLayout title="Academic Reports">
       <div className="page-header">
         <div>
-          <h1>Academic Reports & Transcripts</h1>
-          <p>GPA calculation, semester grades, and cumulative records</p>
+          <h1>Academic Reports &amp; Transcripts</h1>
+          <p>GPA calculation, semester grades and cumulative records</p>
         </div>
-        <div style={{ display:'flex', gap:'10px' }}>
+        <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
           {(user?.role === 'admin' || user?.role === 'teacher') && (
-            <button className="btn btn-primary" onClick={() => setShowGradeModal(true)}>Enter Grade</button>
+            <button className="btn btn-primary" onClick={() => setShowGradeModal(true)}>+ Enter Grade</button>
           )}
           {transcript && (
             <>
               <button className="btn btn-secondary" onClick={exportCSV}>Export CSV</button>
-              <button className="btn btn-secondary" onClick={exportPDF}>Export PDF</button>
+              <button className="btn btn-secondary" onClick={exportPDF}>🖨 Print Transcript</button>
             </>
           )}
           {user?.role === 'student' && (
             <button className="btn btn-secondary" onClick={requestTranscript} disabled={requesting}>
-              {requesting ? 'Requesting...' : 'Request Official Transcript'}
+              {requesting ? 'Requesting...' : 'Request Official Copy'}
             </button>
           )}
         </div>
       </div>
 
-      {/* Student Selector (admin/teacher) */}
+      {/* Student Selector */}
       {user?.role !== 'student' && (
         <div className="card mb-20" style={{ padding:'16px 20px' }}>
-          <div style={{ display:'flex', gap:'12px', alignItems:'end' }}>
-            <div className="form-group" style={{ flex:1 }}>
+          <div style={{ display:'flex', gap:'12px', alignItems:'flex-end', flexWrap:'wrap' }}>
+            <div className="form-group" style={{ flex:1, minWidth:'200px', marginBottom:0 }}>
               <label className="form-label">Select Student</label>
               <select className="form-select" value={transcriptId} onChange={e => setTranscriptId(e.target.value)}>
                 <option value="">-- Select a student --</option>
@@ -249,88 +251,144 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* Transcript */}
       {loading && <div className="loading-center"><div className="spinner" /></div>}
 
+      {/* A4 Transcript Preview */}
       {transcript && !loading && (
-        <>
-          {/* Student Info */}
-          <div className="card mb-20">
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:'16px' }}>
-              <div>
-                <h2 style={{ fontSize:'22px', fontWeight:800 }}>{transcript.student.first_name} {transcript.student.last_name}</h2>
-                <p style={{ color:'var(--color-text-secondary)', fontSize:'14px', marginTop:'4px' }}>
-                  {transcript.student.student_number} · {transcript.student.program || 'N/A'} · Year {transcript.student.year_of_study || '—'}
-                </p>
+        <div className="transcript-scroll">
+        <div style={{ display:'flex', justifyContent:'center', padding:'0 0 40px' }}>
+          <div style={{
+            width:'794px', maxWidth:'100%', background:'#fff', color:'#000',
+            boxShadow:'0 4px 40px rgba(0,0,0,0.35)',
+            borderRadius:'4px', padding:'40px 48px',
+            fontFamily:"'Times New Roman', Times, serif",
+            fontSize:'13px', lineHeight:'1.6'
+          }}>
+            {/* Header */}
+            <div style={{ textAlign:'center', borderBottom:'3px double #000', paddingBottom:'14px', marginBottom:'20px' }}>
+              <div style={{ fontSize:'20px', fontWeight:900, letterSpacing:'0.08em', textTransform:'uppercase' }}>
+                School Administration System
               </div>
-              <div style={{ display:'flex', gap:'20px', textAlign:'right' }}>
-                <div>
-                  <div style={{ fontSize:'32px', fontWeight:900, fontFamily:'Outfit', color: parseFloat(transcript.cumulative_gpa) >= 3.0 ? 'var(--color-success)' : parseFloat(transcript.cumulative_gpa) >= 2.0 ? 'var(--color-warning)' : 'var(--color-danger)' }}>
-                    {transcript.cumulative_gpa}
-                  </div>
-                  <div style={{ fontSize:'11px', color:'var(--color-text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Cumulative GPA</div>
-                </div>
-                <div>
-                  <div style={{ fontSize:'32px', fontWeight:900, fontFamily:'Outfit', color:'var(--color-info)' }}>
-                    {transcript.total_credits}
-                  </div>
-                  <div style={{ fontSize:'11px', color:'var(--color-text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Total Credits</div>
-                </div>
-                <div>
-                  <div style={{ fontSize:'32px', fontWeight:900, fontFamily:'Outfit', color: transcript.attendance_percentage >= 75 ? 'var(--color-success)' : 'var(--color-danger)' }}>
-                    {transcript.attendance_percentage}%
-                  </div>
-                  <div style={{ fontSize:'11px', color:'var(--color-text-muted)', textTransform:'uppercase', letterSpacing:'0.07em' }}>Attendance</div>
-                </div>
+              <div style={{ fontSize:'11px', color:'#555', marginTop:'3px' }}>
+                Institutional Academic Registry · Sierra Leone
+              </div>
+              <div style={{ fontSize:'16px', fontWeight:700, marginTop:'10px', letterSpacing:'0.08em',
+                textTransform:'uppercase', borderTop:'1px solid #ccc', paddingTop:'10px' }}>
+                Official Academic Transcript
               </div>
             </div>
-          </div>
 
-          {/* Semester Breakdown */}
-          {Object.entries(transcript.semesters).length === 0 ? (
-            <div className="card">
-              <div className="empty-state"><p>No grades recorded yet</p></div>
-            </div>
-          ) : (
-            Object.entries(transcript.semesters).map(([sem, data]) => (
-              <div className="card mb-20" key={sem}>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
-                  <h3 style={{ fontSize:'16px', fontWeight:700 }}>Semester: {sem}</h3>
-                  <div style={{ display:'flex', gap:'12px', alignItems:'center' }}>
-                    <span style={{ fontSize:'13px', color:'var(--color-text-muted)' }}>Credits: {data.total_credits}</span>
-                    <span style={{ fontSize:'16px', fontWeight:800, color:'var(--color-gold)' }}>GPA: {data.gpa}</span>
-                  </div>
+            {/* Student Info + GPA Box */}
+            <div style={{ display:'flex', justifyContent:'space-between', gap:'24px', marginBottom:'20px', flexWrap:'wrap' }}>
+              <table style={{ fontSize:'12.5px', borderCollapse:'collapse', flex:1 }}>
+                {[
+                  ['Student Name', `${transcript.student.first_name} ${transcript.student.last_name}`],
+                  ['Student ID', transcript.student.student_number],
+                  ['Program', transcript.student.program || 'N/A'],
+                  ['Year of Study', transcript.student.year_of_study || '—'],
+                  ['Nationality', transcript.student.nationality || 'Sierra Leonean'],
+                  ['Date Issued', new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'long', year:'numeric' })],
+                ].map(([label, val]) => (
+                  <tr key={label}>
+                    <td style={{ padding:'3px 12px 3px 0', color:'#555', whiteSpace:'nowrap', verticalAlign:'top' }}>{label}</td>
+                    <td style={{ padding:'3px 0', fontWeight: label === 'Student Name' || label === 'Student ID' ? 700 : 400 }}>{val}</td>
+                  </tr>
+                ))}
+              </table>
+
+              <div style={{ border:'2px solid #000', borderRadius:'6px', padding:'14px 20px',
+                textAlign:'center', minWidth:'150px', alignSelf:'flex-start' }}>
+                <div style={{ fontSize:'10px', textTransform:'uppercase', letterSpacing:'0.08em', color:'#555', marginBottom:'4px' }}>
+                  Cumulative GPA
                 </div>
-                <div className="table-wrapper">
-                  <table className="data-table">
-                    <thead><tr><th>Class</th><th>Code</th><th>Teacher</th><th>Credits</th><th>Score</th><th>Grade</th><th>Comments</th></tr></thead>
+                <div style={{ fontSize:'34px', fontWeight:900, color: gpaColor(transcript.cumulative_gpa) }}>
+                  {transcript.cumulative_gpa}
+                </div>
+                <div style={{ fontSize:'11px', marginTop:'6px', borderTop:'1px solid #ccc', paddingTop:'6px' }}>
+                  Total Credits: <strong>{transcript.total_credits}</strong>
+                </div>
+                <div style={{ fontSize:'11px', marginTop:'4px' }}>
+                  Attendance: <strong style={{ color: transcript.attendance_percentage >= 75 ? 'green' : 'red' }}>
+                    {transcript.attendance_percentage}%
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            {/* Academic Record */}
+            <div style={{ borderTop:'2px solid #000', paddingTop:'14px', marginBottom:'12px',
+              fontSize:'11px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.06em' }}>
+              Academic Record
+            </div>
+
+            {Object.entries(transcript.semesters).length === 0 ? (
+              <div style={{ padding:'20px', textAlign:'center', color:'#888', fontStyle:'italic' }}>
+                No grades recorded yet.
+              </div>
+            ) : (
+              Object.entries(transcript.semesters).map(([sem, data]) => (
+                <div key={sem} style={{ marginBottom:'22px' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center',
+                    borderBottom:'1.5px solid #000', paddingBottom:'4px', marginBottom:'6px' }}>
+                    <span style={{ fontSize:'12px', fontWeight:700, textTransform:'uppercase', letterSpacing:'0.04em' }}>
+                      Semester: {sem}
+                    </span>
+                    <span style={{ fontSize:'11px' }}>
+                      GPA: <strong>{data.gpa}</strong> &nbsp;|&nbsp; Credits: <strong>{data.total_credits}</strong>
+                    </span>
+                  </div>
+                  <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'12.5px' }}>
+                    <thead>
+                      <tr style={{ background:'#f0f0f0' }}>
+                        {['Code','Course Name','Cr. Hrs','Score','Grade'].map(h => (
+                          <th key={h} style={{ padding:'6px 10px', textAlign: h === 'Course Name' ? 'left' : 'center',
+                            fontSize:'10.5px', textTransform:'uppercase', borderBottom:'1px solid #ccc' }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
                     <tbody>
-                      {data.grades.map(g => (
-                        <tr key={g.id}>
-                          <td style={{ color:'#fff', fontWeight:600 }}>{g.class_name}</td>
-                          <td><code style={{ fontSize:'11px', color:'var(--color-text-muted)' }}>{g.class_code}</code></td>
-                          <td style={{ fontSize:'13px' }}>{g.teacher_first} {g.teacher_last}</td>
-                          <td>{g.credit_hours}</td>
-                          <td>{g.score ? `${g.score}%` : '—'}</td>
-                          <td>
-                            <span style={{ fontSize:'20px', fontWeight:900, fontFamily:'Outfit', color: gradeColor(g.grade) }}>
-                              {g.grade || '—'}
-                            </span>
+                      {data.grades.map((g, i) => (
+                        <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#fafafa' }}>
+                          <td style={{ padding:'6px 10px', fontWeight:600, textAlign:'center' }}>{g.class_code || '—'}</td>
+                          <td style={{ padding:'6px 10px' }}>{g.class_name || '—'}</td>
+                          <td style={{ padding:'6px 10px', textAlign:'center' }}>{g.credit_hours}</td>
+                          <td style={{ padding:'6px 10px', textAlign:'center' }}>{g.score != null ? `${g.score}%` : '—'}</td>
+                          <td style={{ padding:'6px 10px', textAlign:'center', fontWeight:900, fontSize:'15px',
+                            color: gradeColor(g.grade) }}>
+                            {g.grade || '—'}
                           </td>
-                          <td style={{ fontSize:'12px', color:'var(--color-text-muted)', maxWidth:'200px' }}>{g.comments || '—'}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
+              ))
+            )}
+
+            {/* Signature Line */}
+            <div style={{ marginTop:'36px', borderTop:'1px solid #000', paddingTop:'14px',
+              display:'flex', justifyContent:'space-between', fontSize:'11px', flexWrap:'wrap', gap:'16px' }}>
+              <div>
+                <div style={{ marginBottom:'28px' }}>Registrar's Signature: ______________________</div>
+                <div>Date: ______________________</div>
               </div>
-            ))
-          )}
-        </>
+              <div style={{ textAlign:'right', color:'#555' }}>
+                <div style={{ fontWeight:700 }}>School Administration System</div>
+                <div>Official Academic Record</div>
+              </div>
+            </div>
+
+            <div style={{ marginTop:'14px', borderTop:'1px dashed #aaa', paddingTop:'8px',
+              fontSize:'10px', color:'#888', textAlign:'center' }}>
+              CONFIDENTIAL — This transcript is only valid with the official stamp and signature of the Registrar.
+            </div>
+          </div>
+        </div>
+        </div>
       )}
 
       {!transcript && !loading && (
-        <div className="empty-state" style={{ minHeight: 300 }}>
+        <div className="empty-state" style={{ minHeight:300 }}>
           <p>{user?.role === 'student' ? 'Your transcript will appear here' : 'Select a student to view their transcript'}</p>
         </div>
       )}
