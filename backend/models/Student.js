@@ -1,0 +1,24 @@
+const mongoose = require('mongoose');
+
+const StudentSchema = new mongoose.Schema({
+  student_number: { type: String, required: true, unique: true },
+  first_name: { type: String, required: true },
+  last_name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password_hash: { type: String, required: true },
+  date_of_birth: { type: Date },
+  gender: { type: String, enum: ['male', 'female', 'other', 'prefer_not_to_say'] },
+  phone: { type: String },
+  address: { type: String },
+  nationality: { type: String, default: 'Sierra Leonean' },
+  emergency_contact_name: { type: String },
+  emergency_contact_phone: { type: String },
+  consent_gdpr: { type: Boolean, default: false },
+  status: { type: String, enum: ['pending', 'active', 'suspended', 'graduated'], default: 'pending' }
+}, {
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+module.exports = mongoose.model('Student', StudentSchema);
