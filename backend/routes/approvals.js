@@ -4,6 +4,7 @@ const Registration = require('../models/Registration');
 const Payroll = require('../models/Payroll');
 const Transcript = require('../models/Transcript');
 const Student = require('../models/Student');
+const Class = require('../models/Class');
 const AuditLog = require('../models/AuditLog');
 const { authenticate, authorize } = require('../middleware/auth');
 

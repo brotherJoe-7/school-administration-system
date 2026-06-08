@@ -63,7 +63,7 @@ export default function AttendancePage() {
       const { data } = await API.get(`/attendance/class/${selectedClass}/date/${selectedDate}`);
       setRoster(data.data.map(s => ({
         ...s,
-        status: s.status === 'not_recorded' ? 'present' : s.status,
+        status: s.status === 'not_recorded' ? 'absent' : s.status,
       })));
     } catch {
       toast.error('Failed to load class roster');

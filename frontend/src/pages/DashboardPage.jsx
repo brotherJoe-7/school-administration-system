@@ -10,21 +10,15 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const StatCard = ({ label, value, accent, sub, onClick }) => (
-  <div 
-    className="stat-card" 
-    style={{ '--accent': accent, cursor: onClick ? 'pointer' : 'default', transition: 'transform 0.2s, box-shadow 0.2s' }}
+  <div
+    className="stat-card"
+    style={{ '--accent': accent, cursor: onClick ? 'pointer' : 'default' }}
     onClick={onClick}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.transform = 'translateY(-2px)';
-      e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.transform = 'translateY(0)';
-      e.currentTarget.style.boxShadow = 'none';
-    }}
   >
     <div>
-      <div className="stat-value">{value}</div>
+      <div className="stat-value" style={{ fontSize: 'clamp(22px, 5vw, 32px)' }}>
+        {value === null ? <span style={{ color: 'var(--color-text-muted)', fontSize: '20px' }}>—</span> : value}
+      </div>
       <div className="stat-label" style={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.05em', color: 'var(--color-text-muted)', marginTop: '4px' }}>{label}</div>
       {sub && <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginTop: '6px' }}>{sub}</div>}
     </div>
@@ -72,24 +66,15 @@ export default function DashboardPage() {
       .catch(() => setProgramsList(['BIT', 'BBIT', 'BSEM', 'BICT', 'DAT', 'BSc CS', 'BBA MIS', 'Diploma ICT', 'HND Computing']));
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (showFullSpinner = true) => {
+    if (showFullSpinner) setLoading(true);
     try {
       const params = new URLSearchParams();
       if (program) params.append('program', program);
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
-      const [
-        studentsRes,
-        teachersRes,
-        classesRes,
-        paymentsRes,
-        attendanceRateRes,
-        approvalsCountRes,
-        attendanceTrendRes,
-        tuitionProgressRes
-      ] = await Promise.all([
+      const results = await Promise.allSettled([
         API.get(`/students/count?${params}`),
         API.get(`/teachers/count?${params}`),
         API.get(`/classes/count?${params}`),
@@ -100,25 +85,37 @@ export default function DashboardPage() {
         API.get(`/dashboard/tuition-progress?${params}`),
       ]);
 
+      const get = (i, path, fallback) => {
+        if (results[i].status === 'fulfilled') {
+          const keys = path.split('.');
+          let val = results[i].value;
+          for (const k of keys) val = val?.[k];
+          return val ?? fallback;
+        }
+        return fallback;
+      };
+
       setStats({
-        total_students: studentsRes.data.data.count,
-        total_teachers: teachersRes.data.data.count,
-        total_classes: classesRes.data.data.count,
-        tuition_collected: paymentsRes.data.data.total,
-        attendance_rate: attendanceRateRes.data.data.rate,
-        pending_registrations: approvalsCountRes.data.data.count,
+        total_students:       get(0, 'data.data.count', null),
+        total_teachers:       get(1, 'data.data.count', null),
+        total_classes:        get(2, 'data.data.count', null),
+        tuition_collected:    get(3, 'data.data.total', null),
+        attendance_rate:      get(4, 'data.data.rate',  null),
+        pending_registrations:get(5, 'data.data.count', null),
       });
 
-      setAttendance(attendanceTrendRes.data.data || []);
-      setTuition(tuitionProgressRes.data.data || []);
+      setAttendance(get(6, 'data.data', []));
+      setTuition(get(7, 'data.data', []));
 
       if (user?.role === 'admin' || user?.role === 'teacher') {
-        const p = await API.get(`/dashboard/payroll-summary?${params}`);
-        setPayroll(p.data.data || []);
+        try {
+          const p = await API.get(`/dashboard/payroll-summary?${params}`);
+          setPayroll(p.data.data || []);
+        } catch { /* payroll optional */ }
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load live dashboard statistics');
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
@@ -217,30 +214,28 @@ export default function DashboardPage() {
         background: 'linear-gradient(135deg, #111 0%, #000 100%)',
         border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-lg)',
-        padding: '24px 28px',
-        marginBottom: '28px',
+        padding: '20px 24px',
+        marginBottom: '20px',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '16px',
-        overflow: 'hidden',
-        position: 'relative',
       }}>
-        <div>
-          <h2 style={{ fontFamily: 'Outfit', fontSize: '22px', fontWeight: 800, color: '#fff', marginBottom: '6px' }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h2 style={{ fontFamily: 'Outfit', fontSize: 'clamp(16px,4vw,22px)', fontWeight: 800, color: '#fff', marginBottom: '6px' }}>
             Welcome back, {user?.name?.split(' ')[0]}
           </h2>
-          <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px' }}>
+          <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>
             {user?.role === 'admin' && 'System overview and administrative controls'}
             {user?.role === 'teacher' && 'Manage your classes, student attendance, and grades'}
             {user?.role === 'student' && 'Track your academic progress and records'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flexShrink: 0 }}>
           <button
             className="btn btn-primary"
-            style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700 }}
+            style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
             onClick={() => navigate('/students/register')}
           >
             Register New Student
@@ -249,7 +244,7 @@ export default function DashboardPage() {
             <button
               className="btn btn-secondary"
               onClick={() => navigate('/approvals')}
-              style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff' }}
+              style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: '13px', padding: '8px 14px' }}
             >
               Approval Queue
             </button>
@@ -291,33 +286,28 @@ export default function DashboardPage() {
       ) : (
         <>
           {/* Stats Grid */}
-          <div className="stats-grid mb-28">
-            {/* Admin sees all */}
+          <div className="stats-grid mb-20">
             {(user?.role === 'admin') && (
               <>
-                <StatCard label="Total Students" value={stats?.total_students?.toLocaleString() ?? '0'} accent="#000000" sub="Active enrollments" onClick={() => navigate('/students')} />
-                <StatCard label="Teachers"       value={stats?.total_teachers?.toLocaleString() ?? '0'} accent="#000000" sub="Active staff" onClick={() => navigate('/teachers')} />
-                <StatCard label="Classes"        value={stats?.total_classes?.toLocaleString() ?? '0'} accent="#000000" sub="This semester" onClick={() => navigate('/classes')} />
-                <StatCard label="Tuition Collected" value={stats ? formatLeones(stats.tuition_collected) : 'Le 0.0M'} accent="#000000" sub="Verified payments" onClick={() => navigate('/students')} />
-                <StatCard label="Attendance Rate" value={`${stats?.attendance_rate ?? 0}%`} accent="#000000" sub="Within current scope" onClick={() => navigate('/attendance')} />
-                <StatCard label="Pending Approvals" value={stats?.pending_registrations ?? 0} accent="#000000" sub="Awaiting review" onClick={() => navigate('/approvals')} />
+                <StatCard label="Total Students"    value={stats?.total_students    != null ? stats.total_students.toLocaleString()           : null} accent="#000000" sub="Active enrollments"  onClick={() => navigate('/students')} />
+                <StatCard label="Teachers"          value={stats?.total_teachers    != null ? stats.total_teachers.toLocaleString()           : null} accent="#000000" sub="Active staff"        onClick={() => navigate('/teachers')} />
+                <StatCard label="Classes"           value={stats?.total_classes     != null ? stats.total_classes.toLocaleString()            : null} accent="#000000" sub="This semester"       onClick={() => navigate('/classes')} />
+                <StatCard label="Tuition Collected" value={stats?.tuition_collected != null ? formatLeones(stats.tuition_collected)           : null} accent="#000000" sub="Verified payments"   onClick={() => navigate('/students')} />
+                <StatCard label="Attendance Rate"   value={stats?.attendance_rate   != null ? `${stats.attendance_rate}%`                    : null} accent="#000000" sub="Within current scope" onClick={() => navigate('/attendance')} />
+                <StatCard label="Pending Approvals" value={stats?.pending_registrations != null ? stats.pending_registrations                : null} accent="#000000" sub="Awaiting review"     onClick={() => navigate('/approvals')} />
               </>
             )}
-
-            {/* Teacher sees classes, staff directory, attendance */}
             {user?.role === 'teacher' && (
               <>
-                <StatCard label="Teachers"       value={stats?.total_teachers?.toLocaleString() ?? '0'} accent="#000000" sub="Active staff" onClick={() => navigate('/teachers')} />
-                <StatCard label="Classes"        value={stats?.total_classes?.toLocaleString() ?? '0'} accent="#000000" sub="This semester" onClick={() => navigate('/classes')} />
-                <StatCard label="Attendance Rate" value={`${stats?.attendance_rate ?? 0}%`} accent="#000000" sub="Within current scope" onClick={() => navigate('/attendance')} />
+                <StatCard label="Teachers"        value={stats?.total_teachers != null ? stats.total_teachers.toLocaleString() : null} accent="#000000" sub="Active staff"         onClick={() => navigate('/teachers')} />
+                <StatCard label="Classes"         value={stats?.total_classes  != null ? stats.total_classes.toLocaleString()  : null} accent="#000000" sub="This semester"        onClick={() => navigate('/classes')} />
+                <StatCard label="Attendance Rate" value={stats?.attendance_rate != null ? `${stats.attendance_rate}%`          : null} accent="#000000" sub="Within current scope"  onClick={() => navigate('/attendance')} />
               </>
             )}
-
-            {/* Student sees classes & attendance rate */}
             {user?.role === 'student' && (
               <>
-                <StatCard label="Classes"        value={stats?.total_classes?.toLocaleString() ?? '0'} accent="#000000" sub="This semester" onClick={() => navigate('/classes')} />
-                <StatCard label="Attendance Rate" value={`${stats?.attendance_rate ?? 0}%`} accent="#000000" sub="Within current scope" onClick={() => navigate('/attendance')} />
+                <StatCard label="Classes"         value={stats?.total_classes   != null ? stats.total_classes.toLocaleString() : null} accent="#000000" sub="This semester"        onClick={() => navigate('/classes')} />
+                <StatCard label="Attendance Rate" value={stats?.attendance_rate  != null ? `${stats.attendance_rate}%`         : null} accent="#000000" sub="Within current scope"  onClick={() => navigate('/attendance')} />
               </>
             )}
           </div>
