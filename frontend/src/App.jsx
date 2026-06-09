@@ -13,6 +13,7 @@ import AttendancePage         from './pages/AttendancePage';
 import ReportsPage            from './pages/ReportsPage';
 import PayrollPage            from './pages/PayrollPage';
 import ApprovalsPage          from './pages/ApprovalsPage';
+import AuditLogPage           from './pages/AuditLogPage';
 import PaymentsPage           from './pages/PaymentsPage';
 
 function App() {
@@ -48,7 +49,7 @@ function App() {
           <Route path="/payroll"    element={<PayrollPage />} />
           <Route path="/payments"   element={<PaymentsPage />} />
           <Route path="/approvals"  element={<ApprovalsPage />} />
-          <Route path="/audit"      element={<ApprovalsPage />} />
+          <Route path="/audit"      element={<AuditLogPage />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

@@ -168,6 +168,7 @@ app.use('/api/attendance',require('./routes/attendance'));
 app.use('/api/reports',   require('./routes/reports'));
 app.use('/api/payroll',   require('./routes/payroll'));
 app.use('/api/approvals', require('./routes/approvals'));
+app.use('/api/audit',     require('./routes/audit'));
 app.use('/api/classes',   require('./routes/classes'));
 app.use('/api/payments',  require('./routes/payments'));
 
