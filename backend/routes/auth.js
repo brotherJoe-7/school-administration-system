@@ -6,15 +6,12 @@ const Admin = require('../models/Admin');
 const Teacher = require('../models/Teacher');
 const Student = require('../models/Student');
 const AuditLog = require('../models/AuditLog');
+const { loginValidation, registerAdminValidation } = require('../middleware/validation');
 require('dotenv').config();
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', loginValidation, async (req, res) => {
   const { email, password, role } = req.body;
-
-  if (!email || !password || !role) {
-    return res.status(400).json({ success: false, message: 'Email, password and role are required' });
-  }
 
   try {
     let user = null;
@@ -78,7 +75,7 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/auth/register-admin (first-time setup)
-router.post('/register-admin', async (req, res) => {
+router.post('/register-admin', registerAdminValidation, async (req, res) => {
   const { email, password, full_name } = req.body;
 
   try {
@@ -105,6 +102,87 @@ router.post('/register-admin', async (req, res) => {
 // GET /api/auth/me
 router.get('/me', require('../middleware/auth').authenticate, async (req, res) => {
   res.json({ success: true, user: req.user });
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  const { email, role } = req.body;
+
+  if (!email || !role) {
+    return res.status(400).json({ success: false, message: 'Email and role are required' });
+  }
+
+  try {
+    let user = null;
+    if (role === 'admin') {
+      user = await Admin.findOne({ email });
+    } else if (role === 'teacher') {
+      user = await Teacher.findOne({ email });
+    } else if (role === 'student') {
+      user = await Student.findOne({ email });
+    }
+
+    if (!user) {
+      // Don't reveal if user exists for security
+      return res.json({ success: true, message: 'If the email exists, a reset link will be sent' });
+    }
+
+    // Generate reset token (valid for 1 hour)
+    const resetToken = jwt.sign(
+      { id: user._id, role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // In production, send email with reset link
+    // For now, return the token (this is for demo purposes only)
+    console.log(`Password reset token for ${email}: ${resetToken}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'If the email exists, a reset link will be sent',
+      resetToken // Remove this in production
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ success: false, message: 'Token and new password are required' });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
+  }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const { id, role } = decoded;
+
+    // Hash new password
+    const hash = await bcrypt.hash(newPassword, 12);
+
+    // Update password based on role
+    if (role === 'admin') {
+      await Admin.findByIdAndUpdate(id, { password_hash: hash });
+    } else if (role === 'teacher') {
+      await Teacher.findByIdAndUpdate(id, { password_hash: hash });
+    } else if (role === 'student') {
+      await Student.findByIdAndUpdate(id, { password_hash: hash });
+    }
+
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(400).json({ success: false, message: 'Invalid or expired token' });
+  }
 });
 
 module.exports = router;
