@@ -30,16 +30,19 @@ router.post('/login', async (req, res) => {
     }
 
     if (!user) {
+      console.error(`Login failed: User not found for email=${email}, role=${role}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     // Check status (for teacher/student, ignore for admin unless we want to)
     if (user.status === 'inactive' || user.status === 'suspended') {
+      console.error(`Login failed: Account status restricted for email=${email}, status=${user.status}`);
       return res.status(403).json({ success: false, message: 'Account status restricted' });
     }
 
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
+      console.error(`Login failed: Invalid password for email=${email}, role=${role}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
@@ -61,6 +64,7 @@ router.post('/login', async (req, res) => {
       action: 'LOGIN'
     }).catch(() => {}); // Don't fail login if audit logging fails
 
+    console.log(`Login successful: email=${email}, role=${role}`);
     res.json({
       success: true,
       message: 'Login successful',

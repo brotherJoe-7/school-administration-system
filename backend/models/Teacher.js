@@ -16,4 +16,8 @@ const TeacherSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// Indexes for dashboard performance
+TeacherSchema.index({ status: 1 });
+TeacherSchema.index({ created_at: -1 });
+
 module.exports = mongoose.model('Teacher', TeacherSchema);

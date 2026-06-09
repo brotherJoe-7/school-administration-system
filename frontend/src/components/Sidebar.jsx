@@ -26,7 +26,7 @@ const NAV_ITEMS = {
     { label: 'Dashboard',     path: '/dashboard',  icon: '' },
     { label: 'My Attendance', path: '/attendance', icon: '' },
     { label: 'My Transcript', path: '/reports',    icon: '' },
-    { label: 'My Payments',   path: '/reports',    icon: '' },
+    { label: 'My Payments',   path: '/payments',   icon: '' },
   ],
 };
 

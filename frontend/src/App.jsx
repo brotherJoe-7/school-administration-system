@@ -13,6 +13,7 @@ import AttendancePage         from './pages/AttendancePage';
 import ReportsPage            from './pages/ReportsPage';
 import PayrollPage            from './pages/PayrollPage';
 import ApprovalsPage          from './pages/ApprovalsPage';
+import PaymentsPage           from './pages/PaymentsPage';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
           <Route path="/reports"    element={<ReportsPage />} />
           <Route path="/reports/transcript/:studentId" element={<ReportsPage />} />
           <Route path="/payroll"    element={<PayrollPage />} />
+          <Route path="/payments"   element={<PaymentsPage />} />
           <Route path="/approvals"  element={<ApprovalsPage />} />
           <Route path="/audit"      element={<ApprovalsPage />} />
 

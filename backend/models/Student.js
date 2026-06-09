@@ -21,4 +21,8 @@ const StudentSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// Indexes for dashboard performance
+StudentSchema.index({ status: 1 });
+StudentSchema.index({ created_at: -1 });
+
 module.exports = mongoose.model('Student', StudentSchema);

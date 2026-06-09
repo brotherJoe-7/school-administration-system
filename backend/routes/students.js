@@ -55,8 +55,10 @@ router.get('/', authenticate, authorize('admin', 'teacher'), async (req, res) =>
 
     const studentData = await Promise.all(students.map(async (s) => {
       const reg = await Registration.findOne({ student_id: s._id }).sort({ submitted_at: -1 });
+      const studentObj = s.toObject();
+      delete studentObj.password_hash;
       return {
-        ...s.toObject(),
+        ...studentObj,
         reg_status: reg ? reg.status : null,
         registration_id: reg ? reg._id : null,
         program: reg ? reg.program : null,
@@ -74,7 +76,7 @@ router.get('/', authenticate, authorize('admin', 'teacher'), async (req, res) =>
 // GET /api/students/:id
 router.get('/:id', authenticate, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findById(req.params.id).select('-password_hash');
     if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
     
     const reg = await Registration.findOne({ student_id: student._id }).sort({ submitted_at: -1 });

@@ -25,7 +25,7 @@ router.get('/student/:studentId/transcript', authenticate, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
-    const student = await Student.findById(studentId);
+    const student = await Student.findById(studentId).select('-password_hash');
     if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
 
     const registration = await Registration.findOne({ student_id: studentId, status: 'approved' });

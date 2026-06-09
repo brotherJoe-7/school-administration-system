@@ -14,4 +14,9 @@ const RegistrationSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// Indexes for dashboard performance
+RegistrationSchema.index({ status: 1 });
+RegistrationSchema.index({ program: 1 });
+RegistrationSchema.index({ student_id: 1 });
+
 module.exports = mongoose.model('Registration', RegistrationSchema);

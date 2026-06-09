@@ -56,6 +56,7 @@ router.get('/:id', authenticate, authorize('admin', 'teacher'), async (req, res)
     if (!teacher) return res.status(404).json({ success: false, message: 'Teacher not found' });
     res.json({ success: true, data: teacher });
   } catch (error) {
+    console.error('Error fetching teacher:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch teacher' });
   }
 });

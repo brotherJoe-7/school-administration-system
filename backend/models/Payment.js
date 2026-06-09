@@ -17,4 +17,9 @@ const PaymentSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// Indexes for dashboard performance
+PaymentSchema.index({ status: 1 });
+PaymentSchema.index({ payment_date: -1 });
+PaymentSchema.index({ student_id: 1 });
+
 module.exports = mongoose.model('Payment', PaymentSchema);

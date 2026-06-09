@@ -31,7 +31,11 @@ router.get('/stats', authenticate, async (req, res) => {
     if (program) {
       const classesInProgram = await Class.find({ program }).select('students');
       const studentIds = [...new Set(classesInProgram.flatMap(c => c.students.map(id => id.toString())))];
-      studentFilter._id = { $in: studentIds };
+      if (studentIds.length > 0) {
+        studentFilter._id = { $in: studentIds };
+      } else {
+        studentFilter._id = { $in: [] }; // No students in this program
+      }
     }
     const total_students = await Student.countDocuments(studentFilter);
 

@@ -46,13 +46,15 @@ router.get('/count', authenticate, authorize('admin'), async (req, res) => {
 // GET /api/approvals - get all pending items
 router.get('/', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const { type = 'all', status = 'pending' } = req.query;
+    const { type = 'all', status = 'pending', page = 1, limit = 50 } = req.query;
     const results = {};
 
     if (type === 'all' || type === 'registration') {
       const regs = await Registration.find({ status })
         .populate('student_id', 'first_name last_name student_number email phone')
-        .sort({ submitted_at: -1 });
+        .sort({ submitted_at: -1 })
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .limit(parseInt(limit));
 
       // Attach payment info for each student
       const Payment = require('../models/Payment');
@@ -77,7 +79,9 @@ router.get('/', authenticate, authorize('admin'), async (req, res) => {
     if (type === 'all' || type === 'payroll') {
       const payrolls = await Payroll.find({ status })
         .populate('teacher_id', 'first_name last_name teacher_number department')
-        .sort({ created_at: -1 });
+        .sort({ created_at: -1 })
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .limit(parseInt(limit));
 
       results.payroll = payrolls.map(p => ({
         ...p.toObject(),
@@ -91,7 +95,9 @@ router.get('/', authenticate, authorize('admin'), async (req, res) => {
     if (type === 'all' || type === 'transcript') {
       const transcripts = await Transcript.find({ status })
         .populate('student_id', 'first_name last_name student_number')
-        .sort({ requested_at: -1 });
+        .sort({ requested_at: -1 })
+        .skip((parseInt(page) - 1) * parseInt(limit))
+        .limit(parseInt(limit));
 
       const transcriptData = await Promise.all(transcripts.map(async t => {
         const reg = await Registration.findOne({ student_id: t.student_id?._id, status: 'approved' });

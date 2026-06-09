@@ -67,15 +67,18 @@ export default function ApprovalsPage() {
         )}
       </div>
 
-      <div className="tab-bar">
+      {/* Scrollable tab bar — works on all screen sizes */}
+      <div className="tab-bar" style={{ overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch' }}>
         {[
           {key:'registrations', label:`Registrations (${data.registrations?.length||0})`},
-          {key:'payroll', label:`Payroll (${data.payroll?.length||0})`},
-          {key:'transcripts', label:`Transcripts (${data.transcripts?.length||0})`},
-          {key:'attendance', label:'Attendance Review'},
-          {key:'audit', label:'Audit Log'},
+          {key:'payroll',       label:`Payroll (${data.payroll?.length||0})`},
+          {key:'transcripts',  label:`Transcripts (${data.transcripts?.length||0})`},
+          {key:'attendance',   label:'Attendance'},
+          {key:'audit',        label:'Audit Log'},
         ].map(t => (
-          <button key={t.key} className={`tab-btn ${tab===t.key?'active':''}`} onClick={()=>setTab(t.key)}>{t.label}</button>
+          <button key={t.key} className={`tab-btn ${tab===t.key?'active':''}`}
+            style={{ whiteSpace:'nowrap', flexShrink: 0 }}
+            onClick={()=>setTab(t.key)}>{t.label}</button>
         ))}
       </div>
 

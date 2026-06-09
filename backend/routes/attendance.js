@@ -83,6 +83,10 @@ router.get('/class/:classId/date/:date', authenticate, authorize('admin', 'teach
     const { classId, date } = req.params;
     const targetDate = new Date(date);
 
+    if (isNaN(targetDate.getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid date format' });
+    }
+
     const classItem = await Class.findById(classId).populate('students');
     if (!classItem) return res.status(404).json({ success: false, message: 'Class not found' });
 
@@ -97,7 +101,6 @@ router.get('/class/:classId/date/:date', authenticate, authorize('admin', 'teach
     });
 
     const studentsRoster = (classItem.students || [])
-      .filter(s => s.status === 'active')
       .map(s => {
         const att = attMap[s._id.toString()];
         return {
@@ -112,6 +115,7 @@ router.get('/class/:classId/date/:date', authenticate, authorize('admin', 'teach
 
     res.json({ success: true, data: studentsRoster, date, class_id: classId });
   } catch (error) {
+    console.error('Error fetching class roster:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch class roster' });
   }
 });
