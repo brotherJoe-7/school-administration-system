@@ -98,13 +98,17 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/students/register - public student registration
 router.post('/register', async (req, res) => {
   const {
-    first_name, last_name, email, password, date_of_birth, gender,
+    student_number, first_name, last_name, email, password, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,
     emergency_contact_name, emergency_contact_phone, consent_gdpr
   } = req.body;
 
-  if (!first_name || !last_name || !email || !password || !program) {
+  if (!student_number || !first_name || !last_name || !email || !password || !program) {
     return res.status(400).json({ success: false, message: 'Required fields missing' });
+  }
+
+  if (!/^90500\d{4}$/.test(student_number)) {
+    return res.status(400).json({ success: false, message: 'Invalid Student ID. Must be exactly 9 digits starting with 90500.' });
   }
 
   if (!consent_gdpr) {
@@ -112,23 +116,20 @@ router.post('/register', async (req, res) => {
   }
 
   try {
-    const existing = await Student.findOne({ email });
-    if (existing) {
+    const existingEmail = await Student.findOne({ email });
+    if (existingEmail) {
       return res.status(400).json({ success: false, message: 'Email already registered' });
     }
 
+    const existingId = await Student.findOne({ student_number });
+    if (existingId) {
+      return res.status(400).json({ success: false, message: 'Student ID already registered' });
+    }
+
     const hash = await bcrypt.hash(password, 12);
-    const year = new Date().getFullYear();
-    const count = await Student.countDocuments({
-      created_at: {
-        $gte: new Date(`${year}-01-01`),
-        $lte: new Date(`${year}-12-31T23:59:59.999Z`)
-      }
-    });
-    const studentNumber = `SAS${year}${String(count + 1).padStart(4, '0')}`;
 
     const student = await Student.create({
-      student_number: studentNumber,
+      student_number: student_number,
       first_name,
       last_name,
       email,
@@ -154,7 +155,7 @@ router.post('/register', async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Registration submitted successfully. Await admin approval.',
-      student_number: studentNumber,
+      student_number: student_number,
     });
   } catch (error) {
     console.error(error);

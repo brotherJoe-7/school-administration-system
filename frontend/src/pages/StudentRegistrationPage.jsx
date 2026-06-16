@@ -22,7 +22,7 @@ export default function StudentRegistrationPage() {
   const [step, setStep]         = useState(1);
   const [programs, setPrograms] = useState([]);
   const [form, setForm] = useState({
-    first_name: '', last_name: '', email: '', password: '', confirm_password: '',
+    student_number: '', first_name: '', last_name: '', email: '', password: '', confirm_password: '',
     date_of_birth: '', gender: '', phone: '', address: '', nationality: 'Sierra Leonean',
     emergency_contact_name: '', emergency_contact_phone: '',
     program: '', year_of_study: '1', consent_gdpr: false,
@@ -179,6 +179,23 @@ export default function StudentRegistrationPage() {
 
             <div className="form-group mb-16">
               <label className="form-label">
+                Student ID <span style={{ color: 'var(--color-danger)' }}>*</span>
+              </label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="e.g. 905000001 (Must start with 90500)"
+                value={form.student_number}
+                onChange={(e) => set('student_number', e.target.value)}
+                maxLength={9}
+              />
+              <small style={{ color: 'var(--color-text-muted)', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                Please enter the 9-digit Campus ID provided to you.
+              </small>
+            </div>
+
+            <div className="form-group mb-16">
+              <label className="form-label">
                 Program <span style={{ color: 'var(--color-danger)' }}>*</span>
                 {programs.length === 0 && (
                   <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginLeft: '8px' }}>
@@ -239,7 +256,14 @@ export default function StudentRegistrationPage() {
               <button type="button" className="btn btn-primary"
                 style={{ backgroundColor: '#000000', borderColor: '#000000' }}
                 onClick={() => {
-                  if (!form.program)       { toast.error('Please select a program'); return; }
+                  if (!form.student_number || !form.program) {
+                    toast.error('Please enter your Student ID and select a program');
+                    return;
+                  }
+                  if (!/^90500\d{4}$/.test(form.student_number)) {
+                    toast.error('Invalid Student ID. Must be 9 digits starting with 90500.');
+                    return;
+                  }
                   if (!form.consent_gdpr)  { toast.error('GDPR consent is required to register'); return; }
                   setStep(3);
                 }}>
@@ -255,6 +279,7 @@ export default function StudentRegistrationPage() {
             <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>Review Your Application</h2>
             <div style={{ display: 'grid', gap: '12px' }}>
               {[
+                ['Student ID',       form.student_number],
                 ['Full Name',        `${form.first_name} ${form.last_name}`],
                 ['Email',            form.email],
                 ['Phone',            form.phone || '—'],
