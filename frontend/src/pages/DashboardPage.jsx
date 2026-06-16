@@ -8,6 +8,8 @@ import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const StatCard = ({ label, value, accent, sub, onClick }) => (
   <div
@@ -164,47 +166,32 @@ export default function DashboardPage() {
       toast.error('No data available to export');
       return;
     }
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>${title}</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px; color: #111; background: #fff; }
-            h1 { font-size: 22px; margin-bottom: 5px; color: #000; font-weight: 800; text-transform: uppercase; letter-spacing: -0.5px; }
-            p { font-size: 13px; color: #555; margin-bottom: 25px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-            th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; font-size: 13px; }
-            th { background-color: #000; color: #fff; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-            tr:nth-child(even) { background-color: #f9f9f9; }
-            .footer { margin-top: 40px; font-size: 11px; color: #888; text-align: center; border-top: 1px solid #eee; padding-top: 15px; }
-          </style>
-        </head>
-        <body>
-          <h1>${title}</h1>
-          <p>School Administration System — Generated on ${new Date().toLocaleString()}</p>
-          <table>
-            <thead>
-              <tr>${headers.map(h => `<th>${h.replace(/_/g, ' ')}</th>`).join('')}</tr>
-            </thead>
-            <tbody>
-              ${data.map(row => `<tr>${headers.map(h => `<td>${row[h] !== undefined && row[h] !== null ? row[h] : ''}</td>`).join('')}</tr>`).join('')}
-            </tbody>
-          </table>
-          <div class="footer">
-            CONFIDENTIAL — School Administration System. Sierra Leone ICT Law & GDPR Compliant.
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-              window.close();
-            };
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    toast.success('PDF print window opened');
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text(title, 14, 22);
+    doc.setFontSize(11);
+    doc.setTextColor(100);
+    doc.text(`School Administration System — Generated on ${new Date().toLocaleString()}`, 14, 30);
+    
+    const tableColumn = headers.map(h => h.replace(/_/g, ' ').toUpperCase());
+    const tableRows = [];
+    
+    data.forEach(item => {
+      const rowData = headers.map(h => item[h] !== undefined && item[h] !== null ? item[h] : '');
+      tableRows.push(rowData);
+    });
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      styles: { fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [0, 0, 0] },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+    });
+    
+    doc.save(filename);
+    toast.success('PDF downloaded successfully');
   };
 
   return (
@@ -233,13 +220,15 @@ export default function DashboardPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flexShrink: 0 }}>
-          <button
-            className="btn btn-primary"
-            style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
-            onClick={() => navigate('/students/register')}
-          >
-            Register New Student
-          </button>
+          {(user?.role === 'admin' || user?.role === 'teacher') && (
+            <button
+              className="btn btn-primary"
+              style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
+              onClick={() => navigate('/students/register')}
+            >
+              Register New Student
+            </button>
+          )}
           {user?.role === 'admin' && (
             <button
               className="btn btn-secondary"

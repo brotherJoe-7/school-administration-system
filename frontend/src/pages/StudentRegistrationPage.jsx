@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
+import ProtectedLayout from '../components/ProtectedLayout';
 
 const FALLBACK_PROGRAMS = [
   { code: 'BIT',          name: 'Bachelor of Information Technology' },
@@ -81,6 +82,7 @@ export default function StudentRegistrationPage() {
   const stepLabels = ['Personal Details', 'Academic Details', 'Review & Submit'];
 
   return (
+    <ProtectedLayout title="Register New Student" allowedRoles={['admin', 'teacher']}>
     <div style={{ minHeight: '100vh', background: 'var(--color-bg-primary)', padding: '32px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
       {/* Header */}
@@ -294,11 +296,7 @@ export default function StudentRegistrationPage() {
           </div>
         )}
       </form>
-
-      <p style={{ marginTop: '16px', fontSize: '12px', color: 'var(--color-text-muted)', textAlign: 'center' }}>
-        Already registered?{' '}
-        <a href="/login" style={{ color: 'var(--color-gold)' }}>Sign in here</a>
-      </p>
     </div>
+    </ProtectedLayout>
   );
 }

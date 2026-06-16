@@ -33,17 +33,10 @@ const passwordValidation = body('password')
   .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
   .withMessage('Password must contain at least one uppercase letter, one lowercase letter, and one number');
 
-const roleValidation = body('role')
-  .notEmpty()
-  .withMessage('Role is required')
-  .isIn(['admin', 'teacher', 'student'])
-  .withMessage('Invalid role');
-
 // Auth validations
 const loginValidation = [
   emailValidation,
   passwordValidation,
-  roleValidation,
   validate
 ];
 

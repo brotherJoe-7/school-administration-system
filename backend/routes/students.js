@@ -95,8 +95,8 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-// POST /api/students/register - student self-registration
-router.post('/register', async (req, res) => {
+// POST /api/students/register - admin/teacher student registration
+router.post('/register', authenticate, authorize('admin', 'teacher'), async (req, res) => {
   const {
     first_name, last_name, email, password, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,

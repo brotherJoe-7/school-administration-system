@@ -11,42 +11,41 @@ require('dotenv').config();
 
 // POST /api/auth/login
 router.post('/login', loginValidation, async (req, res) => {
-  const { email, password, role } = req.body;
+  const { email, password } = req.body;
 
   try {
-    let user = null;
+    let user = await Admin.findOne({ email });
+    let userRole = 'admin';
 
-    if (role === 'admin') {
-      user = await Admin.findOne({ email });
-    } else if (role === 'teacher') {
+    if (!user) {
       user = await Teacher.findOne({ email });
-    } else if (role === 'student') {
+      userRole = user ? 'teacher' : userRole;
+    }
+    if (!user) {
       user = await Student.findOne({ email });
-    } else {
-      return res.status(400).json({ success: false, message: 'Invalid role' });
+      userRole = user ? 'student' : userRole;
     }
 
     if (!user) {
-      console.error(`Login failed: User not found for email=${email}, role=${role}`);
+      console.error(`Login failed: User not found for email=${email}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Check status (for teacher/student, ignore for admin unless we want to)
-    if (user.status === 'inactive' || user.status === 'suspended') {
+    if (userRole !== 'admin' && (user.status === 'inactive' || user.status === 'suspended')) {
       console.error(`Login failed: Account status restricted for email=${email}, status=${user.status}`);
       return res.status(403).json({ success: false, message: 'Account status restricted' });
     }
 
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
-      console.error(`Login failed: Invalid password for email=${email}, role=${role}`);
+      console.error(`Login failed: Invalid password for email=${email}`);
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
     const tokenPayload = {
       id: user.id || user._id.toString(),
       email: user.email,
-      role: role,
+      role: userRole,
       name: user.full_name || `${user.first_name} ${user.last_name}`,
     };
 
@@ -57,11 +56,11 @@ router.post('/login', loginValidation, async (req, res) => {
     // Audit log
     await AuditLog.create({
       user_id: user._id,
-      user_role: role,
+      user_role: userRole,
       action: 'LOGIN'
     }).catch(() => {}); // Don't fail login if audit logging fails
 
-    console.log(`Login successful: email=${email}, role=${role}`);
+    console.log(`Login successful: email=${email}, role=${userRole}`);
     res.json({
       success: true,
       message: 'Login successful',
@@ -135,13 +134,12 @@ router.post('/forgot-password', async (req, res) => {
     );
 
     // In production, send email with reset link
-    // For now, return the token (this is for demo purposes only)
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    // For now, log the token to the server console only
+    console.log(`[SECURE] Password reset token for ${email}: ${resetToken}`);
     
     res.json({ 
       success: true, 
-      message: 'If the email exists, a reset link will be sent',
-      resetToken // Remove this in production
+      message: 'If the email exists, a reset link will be sent'
     });
   } catch (error) {
     console.error('Forgot password error:', error);
@@ -182,6 +180,36 @@ router.post('/reset-password', async (req, res) => {
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(400).json({ success: false, message: 'Invalid or expired token' });
+  }
+});
+
+// GET /api/auth/export-data (GDPR Compliance)
+router.get('/export-data', require('../middleware/auth').authenticate, async (req, res) => {
+  try {
+    const { id, role } = req.user;
+    const data = { user: req.user, generated_at: new Date() };
+
+    if (role === 'admin') {
+      const profile = await Admin.findById(id).select('-password_hash');
+      const audits = await AuditLog.find({ user_id: id });
+      data.profile = profile;
+      data.audit_logs = audits;
+    } else if (role === 'teacher') {
+      const profile = await Teacher.findById(id).select('-password_hash');
+      const audits = await AuditLog.find({ user_id: id });
+      data.profile = profile;
+      data.audit_logs = audits;
+    } else if (role === 'student') {
+      const profile = await Student.findById(id).select('-password_hash');
+      const audits = await AuditLog.find({ user_id: id });
+      data.profile = profile;
+      data.audit_logs = audits;
+    }
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Data export error:', error);
+    res.status(500).json({ success: false, message: 'Failed to export data' });
   }
 });
 
