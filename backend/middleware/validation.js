@@ -118,6 +118,5 @@ module.exports = {
   paymentValidation,
   gradeValidation,
   emailValidation,
-  passwordValidation,
-  roleValidation
+  passwordValidation
 };
