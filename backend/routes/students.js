@@ -163,6 +163,59 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// PUT /api/students/complete-setup
+router.put('/complete-setup', authenticate, async (req, res) => {
+  const {
+    first_name, last_name, email, password, date_of_birth, gender,
+    phone, address, program, year_of_study, nationality,
+    emergency_contact_name, emergency_contact_phone, consent_gdpr
+  } = req.body;
+
+  if (!first_name || !last_name || !email || !password || !program) {
+    return res.status(400).json({ success: false, message: 'Required fields missing' });
+  }
+
+  try {
+    const student = await Student.findById(req.user.id);
+    if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+    
+    // Check if email already used by another user
+    const existing = await Student.findOne({ email, _id: { $ne: student._id } });
+    if (existing) return res.status(400).json({ success: false, message: 'Email already registered' });
+
+    const hash = await bcrypt.hash(password, 12);
+    
+    await Student.findByIdAndUpdate(student._id, {
+      first_name,
+      last_name,
+      email,
+      password_hash: hash,
+      date_of_birth,
+      gender,
+      phone,
+      address,
+      nationality,
+      emergency_contact_name,
+      emergency_contact_phone,
+      consent_gdpr: !!consent_gdpr,
+      status: 'pending' // Keeps them pending for admin approval
+    });
+
+    // Create Registration entry
+    await Registration.create({
+      student_id: student._id,
+      program,
+      year_of_study: year_of_study || 1,
+      status: 'pending'
+    });
+
+    res.json({ success: true, message: 'Setup completed successfully. Await admin approval.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Setup failed' });
+  }
+});
+
 // PUT /api/students/:id (admin update)
 router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
   const { first_name, last_name, email, phone, address, status } = req.body;

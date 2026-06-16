@@ -74,7 +74,17 @@ export default function StudentsPage() {
           <p>{total} total students in the system</p>
         </div>
         <div style={{ display:'flex', gap:'10px' }}>
-          <Link to="/students/register" className="btn btn-primary">New Registration</Link>
+          {user?.role === 'admin' && (
+            <button 
+              className="btn btn-primary" 
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.origin + '/students/register');
+                toast.success('Setup Link copied! Share this link on WhatsApp.');
+              }}
+            >
+              Copy Setup Link
+            </button>
+          )}
         </div>
       </div>
 

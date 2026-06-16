@@ -213,4 +213,54 @@ router.get('/export-data', require('../middleware/auth').authenticate, async (re
   }
 });
 
+// POST /api/auth/student-setup (WhatsApp Link Flow)
+router.post('/student-setup', async (req, res) => {
+  const { student_number } = req.body;
+  if (!student_number || !/^90500\d{4}$/.test(student_number)) {
+    return res.status(400).json({ success: false, message: 'Invalid Student ID. Must be 9 digits starting with 90500.' });
+  }
+
+  try {
+    let student = await Student.findOne({ student_number });
+    
+    if (student) {
+      if (student.password_hash && student.password_hash !== 'pending') {
+        return res.status(400).json({ success: false, message: 'Account already set up. Please use the standard Login page.' });
+      }
+    } else {
+      // Create a pending shell account
+      student = await Student.create({
+        student_number,
+        first_name: 'Pending',
+        last_name: 'Setup',
+        email: `pending_${student_number}@schooladmin.edu`,
+        password_hash: 'pending',
+        status: 'pending'
+      });
+    }
+
+    const tokenPayload = {
+      id: student._id.toString(),
+      email: student.email,
+      role: 'student',
+      name: student.student_number,
+      needs_setup: true
+    };
+
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+      expiresIn: '1h', // Setup token is short-lived
+    });
+
+    res.json({
+      success: true,
+      message: 'Setup session initiated',
+      token,
+      user: tokenPayload,
+    });
+  } catch (error) {
+    console.error('Student setup error:', error);
+    res.status(500).json({ success: false, message: 'Server error during setup' });
+  }
+});
+
 module.exports = router;

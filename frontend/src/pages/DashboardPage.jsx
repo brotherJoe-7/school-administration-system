@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import StudentSetupModal from '../components/StudentSetupModal';
 
 const StatCard = ({ label, value, accent, sub, onClick }) => (
   <div
@@ -196,6 +197,8 @@ export default function DashboardPage() {
 
   return (
     <ProtectedLayout title="Dashboard">
+      {user?.needs_setup && <StudentSetupModal />}
+      
       {/* Welcome Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #111 0%, #000 100%)',
