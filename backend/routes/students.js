@@ -95,8 +95,8 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-// POST /api/students/register - admin/teacher student registration
-router.post('/register', authenticate, authorize('admin', 'teacher'), async (req, res) => {
+// POST /api/students/register - public student registration
+router.post('/register', async (req, res) => {
   const {
     first_name, last_name, email, password, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,
@@ -177,6 +177,24 @@ router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
     res.json({ success: true, message: 'Student updated' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Update failed' });
+  }
+});
+
+// DELETE /api/students/:id (admin only)
+router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+    
+    // Cleanup related records
+    await Registration.deleteMany({ student_id: req.params.id });
+    await Payment.deleteMany({ student_id: req.params.id });
+    await Student.findByIdAndDelete(req.params.id);
+    
+    res.json({ success: true, message: 'Student and related records deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Failed to delete student' });
   }
 });
 

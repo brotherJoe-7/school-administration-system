@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 
@@ -11,6 +12,7 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function StudentsPage() {
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,28 @@ export default function StudentsPage() {
   };
 
   useEffect(() => { fetchStudents(); }, [page, search, program, status]);
+
+  const handleSuspend = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+    try {
+      await API.put(`/students/${id}`, { status: newStatus });
+      toast.success(`Student ${newStatus === 'active' ? 'activated' : 'suspended'}`);
+      fetchStudents();
+    } catch {
+      toast.error('Failed to update student status');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this student and all their records?')) return;
+    try {
+      await API.delete(`/students/${id}`);
+      toast.success('Student deleted');
+      fetchStudents();
+    } catch {
+      toast.error('Failed to delete student');
+    }
+  };
 
   return (
     <ProtectedLayout title="Students" allowedRoles={['admin','teacher']}>
@@ -122,6 +146,16 @@ export default function StudentsPage() {
                     <td>
                       <div style={{ display:'flex', gap:'6px' }}>
                         <Link to={`/reports/transcript/${s.id}`} className="btn btn-secondary btn-sm">Transcript</Link>
+                        {user?.role === 'admin' && (
+                          <>
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(s.id, s.status)}>
+                              {s.status === 'suspended' ? 'Activate' : 'Suspend'}
+                            </button>
+                            <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(s.id)}>
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

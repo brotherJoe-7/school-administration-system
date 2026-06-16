@@ -115,6 +115,22 @@ router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
   }
 });
 
+// DELETE /api/teachers/:id (admin only)
+router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const teacher = await Teacher.findById(req.params.id);
+    if (!teacher) return res.status(404).json({ success: false, message: 'Teacher not found' });
+    
+    await Teacher.findByIdAndDelete(req.params.id);
+    // Optionally handle related classes by unassigning them
+    await Class.updateMany({ teacher_id: req.params.id }, { $unset: { teacher_id: 1 } });
+    
+    res.json({ success: true, message: 'Teacher deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to delete teacher' });
+  }
+});
+
 // GET /api/teachers/:id/classes
 router.get('/:id/classes', authenticate, async (req, res) => {
   try {

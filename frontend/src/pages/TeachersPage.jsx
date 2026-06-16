@@ -36,6 +36,28 @@ export default function TeachersPage() {
     } catch (err) { toast.error(err.response?.data?.message || 'Failed'); }
   };
 
+  const handleSuspend = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'suspended' ? 'active' : 'suspended';
+    try {
+      await API.put(`/teachers/${id}`, { status: newStatus });
+      toast.success(`Teacher ${newStatus === 'active' ? 'activated' : 'suspended'}`);
+      fetchTeachers();
+    } catch {
+      toast.error('Failed to update teacher status');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to permanently delete this teacher?')) return;
+    try {
+      await API.delete(`/teachers/${id}`);
+      toast.success('Teacher deleted');
+      fetchTeachers();
+    } catch {
+      toast.error('Failed to delete teacher');
+    }
+  };
+
   return (
     <ProtectedLayout title="Teachers" allowedRoles={['admin']}>
       <div className="page-header">
@@ -55,7 +77,7 @@ export default function TeachersPage() {
         <div className="table-wrapper">
           {loading ? <div className="loading-center"><div className="spinner"/></div> : (
             <table className="data-table">
-              <thead><tr><th>Teacher Number</th><th>Name</th><th>Email</th><th>Department</th><th>Specialization</th><th>Status</th></tr></thead>
+              <thead><tr><th>Teacher Number</th><th>Name</th><th>Email</th><th>Department</th><th>Specialization</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {teachers.length === 0 ? (
                   <tr><td colSpan={6}><div className="empty-state"><p>No teachers found</p></div></td></tr>
@@ -66,7 +88,17 @@ export default function TeachersPage() {
                     <td>{t.email}</td>
                     <td>{t.department}</td>
                     <td style={{fontSize:'13px',color:'var(--color-text-muted)'}}>{t.specialization}</td>
-                    <td><span className={`badge badge-${t.status==='active'?'success':'warning'}`}>{t.status}</span></td>
+                    <td><span className={`badge badge-${t.status==='active'?'success':(t.status==='suspended'?'danger':'warning')}`}>{t.status}</span></td>
+                    <td>
+                      <div style={{ display:'flex', gap:'6px' }}>
+                        <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(t.id, t.status)}>
+                          {t.status === 'suspended' ? 'Activate' : 'Suspend'}
+                        </button>
+                        <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(t.id)}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
