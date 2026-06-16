@@ -222,21 +222,13 @@ router.post('/student-setup', async (req, res) => {
 
   try {
     let student = await Student.findOne({ student_number });
-    
-    if (student) {
-      if (student.password_hash && student.password_hash !== 'pending') {
-        return res.status(400).json({ success: false, message: 'Account already set up. Please use the standard Login page.' });
-      }
-    } else {
-      // Create a pending shell account
-      student = await Student.create({
-        student_number,
-        first_name: 'Pending',
-        last_name: 'Setup',
-        email: `pending_${student_number}@schooladmin.edu`,
-        password_hash: 'pending',
-        status: 'pending'
-      });
+
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student ID not found. Please contact administration.' });
+    }
+
+    if (student.password_hash && student.password_hash !== 'pending') {
+      return res.status(400).json({ success: false, message: 'Account already set up. Please use the standard Login page.' });
     }
 
     const tokenPayload = {

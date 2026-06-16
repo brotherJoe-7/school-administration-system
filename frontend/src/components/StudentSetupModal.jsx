@@ -6,19 +6,9 @@ import { useAuth } from '../context/AuthContext';
 export default function StudentSetupModal() {
   const { logout, user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [programs, setPrograms] = useState([]);
   const [form, setForm] = useState({
-    first_name: '', last_name: '', email: '', password: '', confirm_password: '',
-    date_of_birth: '', gender: '', phone: '', address: '', nationality: 'Sierra Leonean',
-    emergency_contact_name: '', emergency_contact_phone: '',
-    program: '', year_of_study: '1', consent_gdpr: false,
+    email: '', password: '', confirm_password: '', consent_gdpr: false,
   });
-
-  useEffect(() => {
-    API.get('/classes/programs')
-      .then(res => setPrograms(res.data.data || []))
-      .catch(() => setPrograms(['BIT', 'BBIT', 'BSEM', 'BICT', 'DAT', 'BSc CS']));
-  }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
@@ -56,47 +46,18 @@ export default function StudentSetupModal() {
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '30px' }}>
-          <div className="form-grid" style={{ marginBottom: '20px' }}>
-            <div className="form-group">
-              <label className="form-label">First Name *</label>
-              <input className="form-input" required value={form.first_name} onChange={e => set('first_name', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Last Name *</label>
-              <input className="form-input" required value={form.last_name} onChange={e => set('last_name', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Email *</label>
-              <input className="form-input" type="email" required value={form.email} onChange={e => set('email', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Phone</label>
-              <input className="form-input" value={form.phone} onChange={e => set('phone', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Password *</label>
-              <input className="form-input" type="password" required value={form.password} onChange={e => set('password', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Confirm Password *</label>
-              <input className="form-input" type="password" required value={form.confirm_password} onChange={e => set('confirm_password', e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Program *</label>
-              <select className="form-select" required value={form.program} onChange={e => set('program', e.target.value)}>
-                <option value="">Select a Program</option>
-                {programs.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Date of Birth</label>
-              <input className="form-input" type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} />
-            </div>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Email Address *</label>
+            <input className="form-input" type="email" placeholder="Your personal email address" required value={form.email} onChange={e => set('email', e.target.value)} />
+            <small style={{ color: 'var(--color-text-muted)', fontSize: '12px', marginTop: '4px', display: 'block' }}>This will be your username for login.</small>
           </div>
-          
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label">Password *</label>
+            <input className="form-input" type="password" required value={form.password} onChange={e => set('password', e.target.value)} />
+          </div>
           <div className="form-group" style={{ marginBottom: '20px' }}>
-            <label className="form-label">Address</label>
-            <input className="form-input" value={form.address} onChange={e => set('address', e.target.value)} />
+            <label className="form-label">Confirm Password *</label>
+            <input className="form-input" type="password" required value={form.confirm_password} onChange={e => set('confirm_password', e.target.value)} />
           </div>
 
           <div style={{ background: 'var(--color-bg-hover)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '16px', marginBottom: '24px' }}>

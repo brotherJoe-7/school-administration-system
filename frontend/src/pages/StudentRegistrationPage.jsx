@@ -1,83 +1,113 @@
-import React, { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import ProtectedLayout from '../components/ProtectedLayout';
 
 export default function StudentRegistrationPage() {
-  const { isAuthenticated, loading: authLoading, login } = useAuth();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [studentId, setStudentId] = useState('');
+  const [loading, setLoading]   = useState(false);
+  const [programs, setPrograms] = useState([]);
+  const [form, setForm] = useState({
+    student_number: '', first_name: '', last_name: '', email: '',
+    date_of_birth: '', gender: '', phone: '', address: '', nationality: 'Sierra Leonean',
+    emergency_contact_name: '', emergency_contact_phone: '',
+    program: '', year_of_study: '1'
+  });
 
-  if (authLoading) return <div className="loading-center"><div className="spinner" /></div>;
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
+  useEffect(() => {
+    API.get('/classes/programs')
+      .then(res => setPrograms(res.data.data || []))
+      .catch(() => setPrograms(['BIT', 'BSc CS', 'Diploma ICT']));
+  }, []);
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!/^90500\d{4}$/.test(studentId)) {
+    if (!/^90500\d{4}$/.test(form.student_number)) {
       toast.error('Invalid Student ID. Must be exactly 9 digits starting with 90500.');
       return;
     }
     
     setLoading(true);
     try {
-      const { data } = await API.post('/auth/student-setup', { student_number: studentId });
-      
-      // The API returns a token and user payload. We log them in using AuthContext.
-      // Wait, AuthContext uses `login` which takes email/password. We need a way to just set the token!
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      // Force a reload so AuthContext picks it up, or redirect
-      window.location.href = '/dashboard';
+      await API.post('/students/register', form);
+      toast.success(`Student ${form.student_number} registered successfully!`);
+      navigate('/students');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to initiate setup');
+      toast.error(err.response?.data?.message || 'Registration failed');
+    } finally {
       setLoading(false);
     }
   };
 
+  const Field = ({ label, name, type = 'text', required, options }) => (
+    <div className="form-group">
+      <label className="form-label">{label}{required && <span style={{ color: 'var(--color-danger)' }}> *</span>}</label>
+      {options ? (
+        <select className="form-select" value={form[name]} onChange={e => set(name, e.target.value)} required={required}>
+          <option value="">Select {label}</option>
+          {options.map(o => <option key={o.value ?? o} value={o.value ?? o}>{o.label ?? o}</option>)}
+        </select>
+      ) : (
+        <input className="form-input" type={type} value={form[name]} onChange={e => set(name, e.target.value)} required={required} />
+      )}
+    </div>
+  );
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg-primary)', padding: '32px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      
-      <div className="card" style={{ maxWidth: '400px', width: '100%', padding: '40px', textAlign: 'center' }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: '50%',
-          background: '#000000', border: '2px solid var(--color-border-light)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 20px', fontSize: '20px', fontWeight: 900, color: '#fff',
-          fontFamily: 'Outfit, sans-serif',
-        }}>SAS</div>
-        
-        <h1 style={{ fontFamily: 'Outfit', fontSize: '24px', fontWeight: 800, marginBottom: '8px' }}>Student Setup</h1>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px', marginBottom: '30px' }}>
-          Enter your 9-digit Campus ID to claim your account and complete your profile.
-        </p>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group" style={{ textAlign: 'left', marginBottom: '20px' }}>
-            <label className="form-label">Student ID</label>
-            <input
-              className="form-input"
-              type="text"
-              placeholder="e.g. 905000001"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value)}
-              maxLength={9}
-              required
-            />
-          </div>
-
-          <button type="submit" className="btn btn-primary btn-lg" disabled={loading}
-            style={{ width: '100%', backgroundColor: '#000000', borderColor: '#000000' }}>
-            {loading ? <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : 'Continue to Dashboard'}
-          </button>
-        </form>
-
-        <p style={{ marginTop: '24px', fontSize: '12px', color: 'var(--color-text-muted)' }}>
-          Already set up? <a href="/login" style={{ color: 'var(--color-gold)' }}>Sign in here</a>
-        </p>
+    <ProtectedLayout title="Register Student" allowedRoles={['admin', 'teacher']}>
+      <div className="page-header">
+        <div>
+          <h1>Register New Student</h1>
+          <p>Create a student profile to allow them to set up their account</p>
+        </div>
       </div>
 
-    </div>
+      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <form onSubmit={handleSubmit}>
+          <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>Academic Info</h2>
+          <div className="form-grid">
+            <div className="form-group">
+              <label className="form-label">Student ID (Campus ID) <span style={{ color: 'var(--color-danger)' }}>*</span></label>
+              <input className="form-input" placeholder="e.g. 905000001" value={form.student_number} onChange={e => set('student_number', e.target.value)} maxLength={9} required />
+            </div>
+            <Field label="Program" name="program" options={programs} required />
+            <Field label="Year of Study" name="year_of_study" options={[1,2,3,4]} required />
+          </div>
+
+          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '30px 0 20px' }}>Personal Info</h2>
+          <div className="form-grid">
+            <Field label="First Name" name="first_name" required />
+            <Field label="Last Name" name="last_name" required />
+            <Field label="Email Address (Optional)" name="email" type="email" />
+            <Field label="Phone" name="phone" />
+            <Field label="Date of Birth" name="date_of_birth" type="date" required />
+            <Field label="Gender" name="gender" options={[
+              { value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }
+            ]} />
+            <Field label="Nationality" name="nationality" />
+          </div>
+          
+          <div className="form-group" style={{ marginTop: '16px' }}>
+            <label className="form-label">Address</label>
+            <input className="form-input" value={form.address} onChange={e => set('address', e.target.value)} />
+          </div>
+
+          <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '30px 0 20px' }}>Emergency Contact</h2>
+          <div className="form-grid">
+            <Field label="Contact Name" name="emergency_contact_name" />
+            <Field label="Contact Phone" name="emergency_contact_phone" />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '30px' }}>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Registering...' : 'Register Student'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </ProtectedLayout>
   );
 }

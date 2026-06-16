@@ -95,15 +95,15 @@ router.get('/:id', authenticate, async (req, res) => {
   }
 });
 
-// POST /api/students/register - public student registration
-router.post('/register', async (req, res) => {
+// POST /api/students/register - Admin creates a new student
+router.post('/register', authenticate, authorize('admin'), async (req, res) => {
   const {
-    student_number, first_name, last_name, email, password, date_of_birth, gender,
+    student_number, first_name, last_name, email, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,
-    emergency_contact_name, emergency_contact_phone, consent_gdpr
+    emergency_contact_name, emergency_contact_phone
   } = req.body;
 
-  if (!student_number || !first_name || !last_name || !email || !password || !program) {
+  if (!student_number || !first_name || !last_name || !program) {
     return res.status(400).json({ success: false, message: 'Required fields missing' });
   }
 
@@ -111,14 +111,12 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Invalid Student ID. Must be exactly 9 digits starting with 90500.' });
   }
 
-  if (!consent_gdpr) {
-    return res.status(400).json({ success: false, message: 'GDPR consent is required' });
-  }
-
   try {
-    const existingEmail = await Student.findOne({ email });
-    if (existingEmail) {
-      return res.status(400).json({ success: false, message: 'Email already registered' });
+    if (email) {
+      const existingEmail = await Student.findOne({ email });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Email already registered' });
+      }
     }
 
     const existingId = await Student.findOne({ student_number });
@@ -126,14 +124,12 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Student ID already registered' });
     }
 
-    const hash = await bcrypt.hash(password, 12);
-
     const student = await Student.create({
       student_number: student_number,
       first_name,
       last_name,
-      email,
-      password_hash: hash,
+      email: email || `pending_${student_number}@schooladmin.edu`,
+      password_hash: 'pending',
       date_of_birth,
       gender,
       phone,
@@ -141,20 +137,20 @@ router.post('/register', async (req, res) => {
       nationality,
       emergency_contact_name,
       emergency_contact_phone,
-      consent_gdpr: !!consent_gdpr,
-      status: 'pending'
+      consent_gdpr: false,
+      status: 'active'
     });
 
     await Registration.create({
       student_id: student._id,
       program,
       year_of_study: year_of_study || 1,
-      status: 'pending'
+      status: 'approved'
     });
 
     res.status(201).json({
       success: true,
-      message: 'Registration submitted successfully. Await admin approval.',
+      message: 'Student created successfully. They can now use the Setup Link to claim their account.',
       student_number: student_number,
     });
   } catch (error) {
@@ -165,14 +161,10 @@ router.post('/register', async (req, res) => {
 
 // PUT /api/students/complete-setup
 router.put('/complete-setup', authenticate, async (req, res) => {
-  const {
-    first_name, last_name, email, password, date_of_birth, gender,
-    phone, address, program, year_of_study, nationality,
-    emergency_contact_name, emergency_contact_phone, consent_gdpr
-  } = req.body;
+  const { email, password, consent_gdpr } = req.body;
 
-  if (!first_name || !last_name || !email || !password || !program) {
-    return res.status(400).json({ success: false, message: 'Required fields missing' });
+  if (!email || !password || !consent_gdpr) {
+    return res.status(400).json({ success: false, message: 'Email, password, and GDPR consent are required' });
   }
 
   try {
@@ -186,30 +178,12 @@ router.put('/complete-setup', authenticate, async (req, res) => {
     const hash = await bcrypt.hash(password, 12);
     
     await Student.findByIdAndUpdate(student._id, {
-      first_name,
-      last_name,
       email,
       password_hash: hash,
-      date_of_birth,
-      gender,
-      phone,
-      address,
-      nationality,
-      emergency_contact_name,
-      emergency_contact_phone,
-      consent_gdpr: !!consent_gdpr,
-      status: 'pending' // Keeps them pending for admin approval
+      consent_gdpr: true
     });
 
-    // Create Registration entry
-    await Registration.create({
-      student_id: student._id,
-      program,
-      year_of_study: year_of_study || 1,
-      status: 'pending'
-    });
-
-    res.json({ success: true, message: 'Setup completed successfully. Await admin approval.' });
+    res.json({ success: true, message: 'Setup completed successfully.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Setup failed' });
