@@ -198,6 +198,29 @@ node seed_curriculum.js
 
 ---
 
+## Roadmap to a World-Class System
+
+To elevate this platform from an excellent MVP to a top-grade, world-class educational ERP, the following features are targeted for future releases:
+
+1. **Automated Notification Engine**
+   - Integration with SendGrid / Nodemailer for automated emails.
+   - SMS gateways for fee reminders, attendance alerts, and enrollment confirmations.
+2. **Integrated Payment Gateways**
+   - Migration from manual payment logging to automated tuition processing via Paystack, Stripe, or local Mobile Money APIs (Orange Money / Afrimoney).
+3. **Advanced e-Learning (LMS) Features**
+   - **File Management**: Allowing teachers to upload course materials, syllabi, and assignment briefs.
+   - **Student Submissions**: Secure portals for students to upload coursework and projects.
+4. **Intelligent Scheduling & Pre-requisites**
+   - **Timetable Conflict Engine**: Automatically alerting admins if a teacher or student is double-booked.
+   - **Academic Enforcements**: Hard-blocking students from enrolling in advanced courses if they haven't passed the prerequisite classes.
+5. **Enhanced Security & Recovery**
+   - **Two-Factor Authentication (2FA)** for Admins and Teachers.
+   - Automated "Forgot Password" self-service email flows.
+6. **Predictive Analytics & Advanced Reporting**
+   - Graphical dashboard overlays predicting student retention, failure risks, and revenue forecasting.
+
+---
+
 ## License
 
 MIT License — see [LICENSE.txt](./LICENSE.txt)
