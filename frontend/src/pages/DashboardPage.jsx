@@ -267,7 +267,7 @@ export default function DashboardPage() {
             <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setProgram(''); setStartDate(''); setEndDate(''); }}>
               Clear
             </button>
-            <button className="btn btn-primary" style={{ flex: 1, backgroundColor: '#000000', borderColor: '#000000' }} onClick={loadData}>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={loadData}>
               Apply
             </button>
           </div>

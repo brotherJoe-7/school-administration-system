@@ -304,7 +304,7 @@ export default function AttendancePage() {
               <button className="btn btn-secondary btn-sm" onClick={handleExportPDF}>Export PDF</button>
               <button className="btn btn-success btn-sm" onClick={setAllPresent}>All Present</button>
               <button className="btn btn-danger btn-sm"  onClick={setAllAbsent}>All Absent</button>
-              <button className="btn btn-primary btn-sm" style={{ backgroundColor: '#000000', borderColor: '#000000' }} onClick={submitAttendance} disabled={submitting || roster.length === 0}>
+              <button className="btn btn-primary btn-sm" onClick={submitAttendance} disabled={submitting || roster.length === 0}>
                 {submitting ? 'Saving...' : 'Submit Attendance'}
               </button>
             </div>
