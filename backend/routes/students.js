@@ -125,19 +125,24 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
     // Auto-generate ID starting with 90500 followed by 4 digits
     const student_number = `90500${String(count + 1).padStart(4, '0')}`;
 
+    // Sanitize empty strings
+    const sanitize = (val) => val === '' ? undefined : val;
+
     const student = await Student.create({
       student_number: student_number,
-      first_name,
-      last_name,
-      email: email || `pending_${student_number}@schooladmin.edu`,
+      first_name: sanitize(first_name),
+      last_name: sanitize(last_name),
+      email: sanitize(email) || `pending_${student_number}@schooladmin.edu`,
       password_hash: 'pending',
-      date_of_birth,
-      gender,
-      phone,
-      address,
-      nationality,
-      emergency_contact_name,
-      emergency_contact_phone,
+      date_of_birth: sanitize(date_of_birth),
+      gender: sanitize(gender),
+      phone: sanitize(phone),
+      address: sanitize(address),
+      nationality: sanitize(nationality),
+      emergency_contact_name: sanitize(emergency_contact_name),
+      emergency_contact_phone: sanitize(emergency_contact_phone),
+      program: sanitize(program),
+      year_of_study: sanitize(year_of_study) || 1,
       consent_gdpr: false,
       status: 'active'
     });
@@ -156,6 +161,12 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: 'Duplicate record exists (email or student number).' });
+    }
     res.status(500).json({ success: false, message: 'Registration failed' });
   }
 });
