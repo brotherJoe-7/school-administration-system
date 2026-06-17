@@ -180,8 +180,17 @@ export default function PayrollPage() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Pay Period</label>
-                  <input type="month" className="form-input" required value={form.pay_period.slice(0,7)||''}
-                    onChange={e=>setForm(f=>({...f,pay_period:e.target.value+'-01'}))} />
+                  <select className="form-select" required value={form.pay_period}
+                    onChange={e=>setForm(f=>({...f,pay_period:e.target.value}))}>
+                    <option value="">Select a Month...</option>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const d = new Date();
+                      d.setMonth(d.getMonth() - i);
+                      const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+                      const label = d.toLocaleString('default', { month: 'long', year: 'numeric' });
+                      return <option key={val} value={val}>{label}</option>;
+                    })}
+                  </select>
                 </div>
                 <div className="form-grid">
                   <div className="form-group">

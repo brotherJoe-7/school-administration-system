@@ -72,9 +72,7 @@ export default function ApprovalsPage() {
         {[
           {key:'registrations', label:`Registrations (${data.registrations?.length||0})`},
           {key:'payroll',       label:`Payroll (${data.payroll?.length||0})`},
-          {key:'transcripts',  label:`Transcripts (${data.transcripts?.length||0})`},
-          {key:'attendance',   label:'Attendance'},
-          {key:'audit',        label:'Audit Log'},
+          {key:'transcripts',  label:`Transcripts (${data.transcripts?.length||0})`}
         ].map(t => (
           <button key={t.key} className={`tab-btn ${tab===t.key?'active':''}`}
             style={{ whiteSpace:'nowrap', flexShrink: 0 }}
@@ -186,54 +184,6 @@ export default function ApprovalsPage() {
             </div>
           )}
 
-          {/* Attendance Review Tab */}
-          {tab==='attendance' && (
-            <div className="card" style={{padding:0}}>
-              <div className="table-wrapper">
-                <table className="data-table">
-                  <thead><tr><th>Timestamp</th><th>Recorded By (User ID)</th><th>Role</th><th>Class Reference</th><th>Submission Details</th></tr></thead>
-                  <tbody>
-                    {auditLog.filter(a => a.action === 'SUBMIT_ATTENDANCE').length === 0 ? (
-                      <tr><td colSpan={5}><div className="empty-state"><p>No attendance changes or submissions found for review</p></div></td></tr>
-                    ) : auditLog.filter(a => a.action === 'SUBMIT_ATTENDANCE').map(a => (
-                      <tr key={a.id}>
-                        <td style={{fontSize:'12px',color:'var(--color-text-muted)'}}>{new Date(a.timestamp).toLocaleString()}</td>
-                        <td><code style={{color:'var(--color-gold)'}}>{a.user_id}</code></td>
-                        <td><span className="badge badge-neutral">{a.user_role}</span></td>
-                        <td>Class ID: #{a.entity_id}</td>
-                        <td style={{color:'#fff', fontSize: '13px'}}>{a.notes}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Audit Log Tab */}
-          {tab==='audit' && (
-            <div className="card" style={{padding:0}}>
-              <div className="table-wrapper">
-                <table className="data-table">
-                  <thead><tr><th>Timestamp</th><th>User ID</th><th>Role</th><th>Action</th><th>Entity</th><th>Notes</th></tr></thead>
-                  <tbody>
-                    {auditLog.length===0 ? (
-                      <tr><td colSpan={6}><div className="empty-state"><p>No audit records</p></div></td></tr>
-                    ) : auditLog.map(a => (
-                      <tr key={a.id}>
-                        <td style={{fontSize:'12px',color:'var(--color-text-muted)'}}>{new Date(a.timestamp).toLocaleString()}</td>
-                        <td>{a.user_id}</td>
-                        <td><span className="badge badge-neutral">{a.user_role}</span></td>
-                        <td style={{color:'var(--color-gold)',fontWeight:600,fontSize:'12px'}}>{a.action}</td>
-                        <td style={{fontSize:'12px'}}>{a.entity_type} #{a.entity_id}</td>
-                        <td style={{fontSize:'12px',color:'var(--color-text-muted)'}}>{a.notes||'—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
         </>
       )}
     </ProtectedLayout>

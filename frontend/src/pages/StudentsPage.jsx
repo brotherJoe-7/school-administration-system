@@ -21,6 +21,11 @@ export default function StudentsPage() {
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
   const [programsList, setProgramsList] = useState([]);
+  
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [studentPayments, setStudentPayments] = useState([]);
+  const [paymentForm, setPaymentForm] = useState({ amount_paid:'', amount_due:'', payment_date:'', payment_method:'', reference:'', semester:'' });
+  const [loadingPayments, setLoadingPayments] = useState(false);
 
   useEffect(() => {
     API.get('/classes/programs')
@@ -63,6 +68,31 @@ export default function StudentsPage() {
       fetchStudents();
     } catch {
       toast.error('Failed to delete student');
+    }
+  };
+
+  const openPayments = async (student) => {
+    setSelectedStudent(student);
+    setLoadingPayments(true);
+    try {
+      const { data } = await API.get(`/students/${student.id}/payments`);
+      setStudentPayments(data.data || []);
+    } catch {
+      toast.error('Failed to load payments');
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
+  const handleAddPayment = async (e) => {
+    e.preventDefault();
+    try {
+      await API.post(`/students/${selectedStudent.id}/payments`, paymentForm);
+      toast.success('Payment recorded successfully');
+      setPaymentForm({ amount_paid:'', amount_due:'', payment_date:'', payment_method:'', reference:'', semester:'' });
+      openPayments(selectedStudent); // Refresh payments
+    } catch (err) {
+      toast.error('Failed to record payment');
     }
   };
 
@@ -158,6 +188,7 @@ export default function StudentsPage() {
                         <Link to={`/reports/transcript/${s.id}`} className="btn btn-secondary btn-sm">Transcript</Link>
                         {user?.role === 'admin' && (
                           <>
+                            <button className="btn btn-secondary btn-sm" onClick={() => openPayments(s)}>Payments</button>
                             <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(s.id, s.status)}>
                               {s.status === 'suspended' ? 'Activate' : 'Suspend'}
                             </button>
@@ -188,6 +219,80 @@ export default function StudentsPage() {
           </div>
         )}
       </div>
+
+      {/* Payments Modal */}
+      {selectedStudent && (
+        <div className="modal-overlay" onClick={() => setSelectedStudent(null)}>
+          <div className="modal-box" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Payments for {selectedStudent.first_name} {selectedStudent.last_name} ({selectedStudent.student_number})</h3>
+              <button className="btn btn-secondary btn-sm" onClick={() => setSelectedStudent(null)}>✕</button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div className="card" style={{ padding: '16px', background: 'var(--color-bg-primary)' }}>
+                <h4 style={{ marginBottom: '12px', fontSize: '14px' }}>Add New Payment</h4>
+                <form onSubmit={handleAddPayment} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div className="form-group">
+                    <label className="form-label">Amount Paid (Le)</label>
+                    <input className="form-input" type="number" required value={paymentForm.amount_paid} onChange={e => setPaymentForm({ ...paymentForm, amount_paid: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Amount Due (Le)</label>
+                    <input className="form-input" type="number" required value={paymentForm.amount_due} onChange={e => setPaymentForm({ ...paymentForm, amount_due: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Payment Date</label>
+                    <input className="form-input" type="date" required value={paymentForm.payment_date} onChange={e => setPaymentForm({ ...paymentForm, payment_date: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Semester</label>
+                    <input className="form-input" required placeholder="e.g. Year 1 Sem 1" value={paymentForm.semester} onChange={e => setPaymentForm({ ...paymentForm, semester: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Method</label>
+                    <select className="form-select" required value={paymentForm.payment_method} onChange={e => setPaymentForm({ ...paymentForm, payment_method: e.target.value })}>
+                      <option value="">Select</option>
+                      <option value="Cash">Cash</option>
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="Mobile Money">Mobile Money</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Reference</label>
+                    <input className="form-input" placeholder="Receipt/Txn Number" value={paymentForm.reference} onChange={e => setPaymentForm({ ...paymentForm, reference: e.target.value })} />
+                  </div>
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+                    <button type="submit" className="btn btn-primary">Save Payment</button>
+                  </div>
+                </form>
+              </div>
+
+              <div>
+                <h4 style={{ marginBottom: '12px', fontSize: '14px' }}>Payment History</h4>
+                {loadingPayments ? <div className="loading-center"><div className="spinner" /></div> : (
+                  <table className="data-table">
+                    <thead><tr><th>Date</th><th>Amount Paid</th><th>Due</th><th>Semester</th><th>Method</th><th>Ref</th></tr></thead>
+                    <tbody>
+                      {studentPayments.length === 0 ? <tr><td colSpan={6}>No payments found.</td></tr> : 
+                        studentPayments.map(p => (
+                          <tr key={p.id}>
+                            <td>{new Date(p.payment_date).toLocaleDateString()}</td>
+                            <td style={{ color: 'var(--color-success)', fontWeight: 600 }}>Le {p.amount_paid}</td>
+                            <td style={{ color: 'var(--color-danger)' }}>Le {p.amount_due}</td>
+                            <td>{p.semester}</td>
+                            <td>{p.payment_method}</td>
+                            <td style={{ fontSize: '11px' }}>{p.reference}</td>
+                          </tr>
+                        ))
+                      }
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedLayout>
   );
 }

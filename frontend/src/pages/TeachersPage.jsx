@@ -58,6 +58,17 @@ export default function TeachersPage() {
     }
   };
 
+  const handlePromote = async (id) => {
+    if (!window.confirm('Are you sure you want to promote this teacher to an Administrator? This will move their account to the Admins group.')) return;
+    try {
+      await API.post(`/teachers/${id}/promote`);
+      toast.success('Teacher promoted to Admin successfully');
+      fetchTeachers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to promote teacher');
+    }
+  };
+
   return (
     <ProtectedLayout title="Teachers" allowedRoles={['admin']}>
       <div className="page-header">
@@ -90,9 +101,12 @@ export default function TeachersPage() {
                     <td style={{fontSize:'13px',color:'var(--color-text-muted)'}}>{t.specialization}</td>
                     <td><span className={`badge badge-${t.status==='active'?'success':(t.status==='suspended'?'danger':'warning')}`}>{t.status}</span></td>
                     <td>
-                      <div style={{ display:'flex', gap:'6px' }}>
+                      <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
                         <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(t.id, t.status)}>
                           {t.status === 'suspended' ? 'Activate' : 'Suspend'}
+                        </button>
+                        <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-success)' }} onClick={() => handlePromote(t.id)}>
+                          Promote to Admin
                         </button>
                         <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(t.id)}>
                           Delete

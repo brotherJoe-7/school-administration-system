@@ -98,17 +98,13 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/students/register - Admin creates a new student
 router.post('/register', authenticate, authorize('admin'), async (req, res) => {
   const {
-    student_number, first_name, last_name, email, date_of_birth, gender,
+    first_name, last_name, email, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,
     emergency_contact_name, emergency_contact_phone
   } = req.body;
 
-  if (!student_number || !first_name || !last_name || !program) {
+  if (!first_name || !last_name || !program) {
     return res.status(400).json({ success: false, message: 'Required fields missing' });
-  }
-
-  if (!/^90500\d{4}$/.test(student_number)) {
-    return res.status(400).json({ success: false, message: 'Invalid Student ID. Must be exactly 9 digits starting with 90500.' });
   }
 
   try {
@@ -119,10 +115,15 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
       }
     }
 
-    const existingId = await Student.findOne({ student_number });
-    if (existingId) {
-      return res.status(400).json({ success: false, message: 'Student ID already registered' });
-    }
+    const year = new Date().getFullYear();
+    const count = await Student.countDocuments({
+      created_at: {
+        $gte: new Date(`${year}-01-01`),
+        $lte: new Date(`${year}-12-31T23:59:59.999Z`)
+      }
+    });
+    // Auto-generate ID starting with 90500 followed by 4 digits
+    const student_number = `90500${String(count + 1).padStart(4, '0')}`;
 
     const student = await Student.create({
       student_number: student_number,

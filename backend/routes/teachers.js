@@ -131,6 +131,36 @@ router.delete('/:id', authenticate, authorize('admin'), async (req, res) => {
   }
 });
 
+// POST /api/teachers/:id/promote (admin only)
+router.post('/:id/promote', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    const teacher = await Teacher.findById(req.params.id);
+    if (!teacher) return res.status(404).json({ success: false, message: 'Teacher not found' });
+    
+    // Create an Admin using the teacher's data
+    const Admin = require('../models/Admin');
+    await Admin.create({
+      full_name: `${teacher.first_name} ${teacher.last_name}`,
+      email: teacher.email,
+      password_hash: teacher.password_hash,
+      status: 'active'
+    });
+    
+    // Delete the teacher
+    await Teacher.findByIdAndDelete(req.params.id);
+    // Unassign classes
+    await Class.updateMany({ teacher_id: req.params.id }, { $unset: { teacher_id: 1 } });
+    
+    res.json({ success: true, message: 'Teacher successfully promoted to Admin' });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: 'An Admin with this email already exists' });
+    }
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Failed to promote teacher' });
+  }
+});
+
 // GET /api/teachers/:id/classes
 router.get('/:id/classes', authenticate, async (req, res) => {
   try {

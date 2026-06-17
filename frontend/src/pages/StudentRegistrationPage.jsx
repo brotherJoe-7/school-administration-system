@@ -9,7 +9,7 @@ export default function StudentRegistrationPage() {
   const [loading, setLoading]   = useState(false);
   const [programs, setPrograms] = useState([]);
   const [form, setForm] = useState({
-    student_number: '', first_name: '', last_name: '', email: '',
+    first_name: '', last_name: '', email: '',
     date_of_birth: '', gender: '', phone: '', address: '', nationality: 'Sierra Leonean',
     emergency_contact_name: '', emergency_contact_phone: '',
     program: '', year_of_study: '1'
@@ -25,15 +25,12 @@ export default function StudentRegistrationPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!/^90500\d{4}$/.test(form.student_number)) {
-      toast.error('Invalid Student ID. Must be exactly 9 digits starting with 90500.');
-      return;
-    }
-    
     setLoading(true);
     try {
-      await API.post('/students/register', form);
-      toast.success(`Student ${form.student_number} registered successfully!`);
+      const { data } = await API.post('/students/register', form);
+      toast.success(`Student registered successfully!`);
+      // Show the ID to the admin securely
+      window.prompt('Student Registration Successful! Share this ID with the student so they can setup their account:', data.student_number);
       navigate('/students');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
@@ -69,10 +66,6 @@ export default function StudentRegistrationPage() {
         <form onSubmit={handleSubmit}>
           <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>Academic Info</h2>
           <div className="form-grid">
-            <div className="form-group">
-              <label className="form-label">Student ID (Campus ID) <span style={{ color: 'var(--color-danger)' }}>*</span></label>
-              <input className="form-input" placeholder="e.g. 905000001" value={form.student_number} onChange={e => set('student_number', e.target.value)} maxLength={9} required />
-            </div>
             <Field label="Program" name="program" options={programs} required />
             <Field label="Year of Study" name="year_of_study" options={[1,2,3,4]} required />
           </div>
