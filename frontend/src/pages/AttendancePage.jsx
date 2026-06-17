@@ -12,7 +12,9 @@ export default function AttendancePage() {
   const [classes, setClasses] = useState([]);
   const [filteredClasses, setFilteredClasses] = useState([]);
   const [selectedProgram, setSelectedProgram] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState('');
   const [programsList, setProgramsList] = useState([]);
+  const [semestersList, setSemestersList] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [roster, setRoster] = useState([]);
@@ -26,7 +28,10 @@ export default function AttendancePage() {
   useEffect(() => {
     API.get('/classes/programs')
       .then(res => setProgramsList(res.data.data || []))
-      .catch(() => setProgramsList(['BIT', 'BBIT', 'BSEM', 'BICT', 'DAT']));
+      .catch(() => {});
+    API.get('/classes/semesters')
+      .then(res => setSemestersList(res.data.data || []))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -46,15 +51,14 @@ export default function AttendancePage() {
     }
   }, [user]);
 
-  // Filter classes dropdown by program
+  // Filter classes dropdown by program and semester
   useEffect(() => {
-    if (selectedProgram) {
-      setFilteredClasses(classes.filter(c => c.program === selectedProgram));
-      setSelectedClass(''); // reset selection
-    } else {
-      setFilteredClasses(classes);
-    }
-  }, [selectedProgram, classes]);
+    let filtered = classes;
+    if (selectedProgram) filtered = filtered.filter(c => c.program === selectedProgram);
+    if (selectedSemester) filtered = filtered.filter(c => c.semester === selectedSemester);
+    setFilteredClasses(filtered);
+    setSelectedClass('');
+  }, [selectedProgram, selectedSemester, classes]);
 
   const loadRoster = useCallback(async () => {
     if (!selectedClass || !selectedDate) return;
@@ -246,8 +250,15 @@ export default function AttendancePage() {
           <div className="form-group" style={{ marginBottom:0 }}>
             <label className="form-label">Filter Program</label>
             <select className="form-select" value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)}>
-              <option value="">All Faculty Programs</option>
+              <option value="">All Programs</option>
               {programsList.map(p => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div className="form-group" style={{ marginBottom:0 }}>
+            <label className="form-label">Filter Semester</label>
+            <select className="form-select" value={selectedSemester} onChange={e => setSelectedSemester(e.target.value)}>
+              <option value="">All Semesters</option>
+              {semestersList.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
           <div className="form-group" style={{ marginBottom:0 }}>

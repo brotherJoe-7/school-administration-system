@@ -18,7 +18,7 @@ export default function StudentRegistrationPage() {
   useEffect(() => {
     API.get('/classes/programs')
       .then(res => setPrograms(res.data.data || []))
-      .catch(() => setPrograms(['BIT', 'BSc CS', 'Diploma ICT']));
+      .catch(() => setPrograms(['Diploma in Information Technology (DIT)', 'B.Sc. (Hons) Information Technology', 'B.Sc. (Hons) Business Information Technology', 'B.Sc. (Hons) Software Engineering with Multimedia', 'B.Sc. (Hons) Information & Communication Technology']));
   }, []);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));

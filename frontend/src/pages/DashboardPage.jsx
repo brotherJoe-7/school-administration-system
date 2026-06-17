@@ -66,7 +66,7 @@ export default function DashboardPage() {
   useEffect(() => {
     API.get('/classes/programs')
       .then(res => setProgramsList(res.data.data || []))
-      .catch(() => setProgramsList(['BIT', 'BBIT', 'BSEM', 'BICT', 'DAT', 'BSc CS', 'BBA MIS', 'Diploma ICT', 'HND Computing']));
+      .catch(() => {});
   }, []);
 
   const loadData = async (showFullSpinner = true) => {

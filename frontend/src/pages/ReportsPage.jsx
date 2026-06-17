@@ -28,6 +28,7 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(false);
   const [students, setStudents] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [semestersList, setSemestersList] = useState([]);
   const [showGradeModal, setShowGradeModal] = useState(false);
   const [gradeForm, setGradeForm] = useState({ student_id:'', class_id:'', semester:'', grade:'', score:'', comments:'' });
   const [requesting, setRequesting] = useState(false);
@@ -36,6 +37,7 @@ export default function ReportsPage() {
     if (user?.role !== 'student') {
       API.get('/students?limit=200&status=active').then(r => setStudents(r.data.data || [])).catch(() => {});
       API.get('/classes').then(r => setClasses(r.data.data || [])).catch(() => {});
+      API.get('/classes/semesters').then(r => setSemestersList(r.data.data || [])).catch(() => {});
     }
     if (user?.role === 'student' && user.id) loadTranscript(user.id);
   }, [user]);
@@ -422,8 +424,11 @@ export default function ReportsPage() {
                 <div className="form-grid">
                   <div className="form-group">
                     <label className="form-label">Semester</label>
-                    <input className="form-input" placeholder="e.g. 2024-Sem1" required value={gradeForm.semester}
-                      onChange={e => setGradeForm(f => ({ ...f, semester: e.target.value }))} />
+                    <select className="form-select" required value={gradeForm.semester}
+                      onChange={e => setGradeForm(f => ({ ...f, semester: e.target.value }))}>
+                      <option value="">Select Semester</option>
+                      {semestersList.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Grade</label>
