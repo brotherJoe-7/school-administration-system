@@ -13,6 +13,8 @@ const StudentSchema = new mongoose.Schema({
   nationality: { type: String, default: 'Sierra Leonean' },
   emergency_contact_name: { type: String },
   emergency_contact_phone: { type: String },
+  program: { type: String },
+  year_of_study: { type: Number, default: 1 },
   consent_gdpr: { type: Boolean, default: false },
   reset_password_token: { type: String },
   reset_password_expires: { type: Date },
