@@ -128,7 +128,7 @@ async function main() {
   // ── Students ──
   console.log('🎓  Seeding students...');
   const stuHash = await bcrypt.hash('Student123!', 12);
-  let stuNumber = 90500001;
+  let stuNumber = 905000001;
   const students = await Student.insertMany(
     STUDENT_DATA.map(s => ({
       ...s,
