@@ -48,10 +48,10 @@ const limiter = rateLimit({
 // Apply rate limiting to all API routes
 app.use('/api/', limiter);
 
-// Stricter rate limiting for auth routes
+// Stricter rate limiting for auth routes (Relaxed for presentation)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  max: 100, // Increased from 5 to 100 to prevent lockout during presentation
   message: { success: false, message: 'Too many login attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
