@@ -219,8 +219,8 @@ router.get('/export-data', require('../middleware/auth').authenticate, async (re
 // POST /api/auth/student-setup (WhatsApp Link Flow)
 router.post('/student-setup', async (req, res) => {
   const { student_number } = req.body;
-  if (!student_number || !/^90500\d{4}$/.test(student_number)) {
-    return res.status(400).json({ success: false, message: 'Invalid Student ID. Must be 9 digits starting with 90500.' });
+  if (!student_number || !/^90500\d{3,5}$/.test(student_number)) {
+    return res.status(400).json({ success: false, message: 'Invalid Student ID. Must start with 90500.' });
   }
 
   try {

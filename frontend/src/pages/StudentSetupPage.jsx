@@ -14,8 +14,8 @@ export default function StudentSetupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!/^90500\d{4}$/.test(studentId)) {
-      toast.error('Invalid Student ID. Must be exactly 9 digits starting with 90500.');
+    if (!/^90500\d{3,5}$/.test(studentId)) {
+      toast.error('Invalid Student ID. Must start with 90500.');
       return;
     }
     
@@ -63,7 +63,7 @@ export default function StudentSetupPage() {
           </div>
 
           <button type="submit" className="btn btn-primary btn-lg" disabled={loading}
-            style={{ width: '100%', backgroundColor: '#000000', borderColor: '#000000' }}>
+            style={{ width: '100%' }}>
             {loading ? <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : 'Continue to Dashboard'}
           </button>
         </form>
