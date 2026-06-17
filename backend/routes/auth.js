@@ -135,7 +135,10 @@ router.post('/forgot-password', async (req, res) => {
 
     // In production, send email with reset link
     // For now, log the token to the server console only
-    console.log(`[SECURE] Password reset token for ${email}: ${resetToken}`);
+    const frontendUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://school-administration-system.vercel.app' 
+      : 'http://localhost:5173';
+    console.log(`[SECURE] Password reset link for ${email}: ${frontendUrl}/reset-password?token=${resetToken}`);
     
     res.json({ 
       success: true, 

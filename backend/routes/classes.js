@@ -100,6 +100,13 @@ router.get('/:id', authenticate, async (req, res) => {
 router.post('/', authenticate, authorize('admin'), async (req, res) => {
   const { class_name, class_code, teacher_id, program, credit_hours, semester, schedule } = req.body;
   try {
+    if (teacher_id && schedule) {
+      const conflict = await Class.findOne({ teacher_id, schedule });
+      if (conflict) {
+        return res.status(400).json({ success: false, message: `Conflict: Teacher already assigned to ${conflict.class_name} at this time.` });
+      }
+    }
+
     const newClass = await Class.create({
       class_name,
       class_code,
@@ -119,6 +126,13 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
 router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
   const { class_name, class_code, teacher_id, program, credit_hours, semester, schedule } = req.body;
   try {
+    if (teacher_id && schedule) {
+      const conflict = await Class.findOne({ teacher_id, schedule, _id: { $ne: req.params.id } });
+      if (conflict) {
+        return res.status(400).json({ success: false, message: `Conflict: Teacher already assigned to ${conflict.class_name} at this time.` });
+      }
+    }
+
     await Class.findByIdAndUpdate(req.params.id, {
       class_name,
       class_code,

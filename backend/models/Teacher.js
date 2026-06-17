@@ -9,6 +9,8 @@ const TeacherSchema = new mongoose.Schema({
   phone: { type: String },
   department: { type: String },
   specialization: { type: String },
+  reset_password_token: { type: String },
+  reset_password_expires: { type: Date },
   status: { type: String, enum: ['active', 'inactive', 'on_leave'], default: 'active' }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },

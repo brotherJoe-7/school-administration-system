@@ -14,6 +14,8 @@ const StudentSchema = new mongoose.Schema({
   emergency_contact_name: { type: String },
   emergency_contact_phone: { type: String },
   consent_gdpr: { type: Boolean, default: false },
+  reset_password_token: { type: String },
+  reset_password_expires: { type: Date },
   status: { type: String, enum: ['pending', 'active', 'suspended', 'graduated'], default: 'pending' }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
