@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import AuthLayout from '../components/AuthLayout';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -26,8 +25,8 @@ export default function ForgotPasswordPage() {
 
   if (submitted) {
     return (
-      <AuthLayout title="Check Your Email">
-        <div style={{ textAlign: 'center', margin: '40px 0' }}>
+      <div className="login-page">
+        <div className="login-card" style={{ textAlign: 'center', margin: '40px 0' }}>
           <div style={{ fontSize: '48px', marginBottom: '20px' }}>✉️</div>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '30px' }}>
             We've sent a password reset link to <strong>{email}</strong>.
@@ -37,13 +36,20 @@ export default function ForgotPasswordPage() {
             Return to Login
           </Link>
         </div>
-      </AuthLayout>
+      </div>
     );
   }
 
   return (
-    <AuthLayout title="Forgot Password">
-      <form onSubmit={handleSubmit}>
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-logo">
+          <div>
+            <h1>Forgot Password</h1>
+            <p>Request a secure reset link</p>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">I am a...</label>
           <select 
@@ -86,6 +92,7 @@ export default function ForgotPasswordPage() {
           </Link>
         </div>
       </form>
-    </AuthLayout>
+      </div>
+    </div>
   );
 }

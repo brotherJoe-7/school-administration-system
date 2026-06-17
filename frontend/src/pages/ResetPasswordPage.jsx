@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
-import AuthLayout from '../components/AuthLayout';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -37,8 +36,8 @@ export default function ResetPasswordPage() {
 
   if (!token) {
     return (
-      <AuthLayout title="Invalid Request">
-        <div style={{ textAlign: 'center', margin: '40px 0' }}>
+      <div className="login-page">
+        <div className="login-card" style={{ textAlign: 'center', margin: '40px 0' }}>
           <p style={{ color: 'var(--color-danger)', marginBottom: '30px' }}>
             Missing reset token. Please request a new password reset link.
           </p>
@@ -46,13 +45,20 @@ export default function ResetPasswordPage() {
             Request New Link
           </Link>
         </div>
-      </AuthLayout>
+      </div>
     );
   }
 
   return (
-    <AuthLayout title="Reset Password">
-      <form onSubmit={handleSubmit}>
+    <div className="login-page">
+      <div className="login-card">
+        <div className="login-logo">
+          <div>
+            <h1>Reset Password</h1>
+            <p>Enter your new secure password</p>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">New Password</label>
           <input 
@@ -86,6 +92,7 @@ export default function ResetPasswordPage() {
           {loading ? 'Resetting...' : 'Reset Password'}
         </button>
       </form>
-    </AuthLayout>
+      </div>
+    </div>
   );
 }
