@@ -18,6 +18,7 @@ const Class    = require('./models/Class');
 const Payment  = require('./models/Payment');
 const Payroll  = require('./models/Payroll');
 const Attendance = require('./models/Attendance');
+const ReportCard = require('./models/ReportCard');
 
 const PROGRAMS = {
   DIT:  'Diploma in Information Technology',
@@ -166,7 +167,7 @@ async function main() {
   // ── Payments (5 months, Jan–May 2025) ──
   console.log('💳  Seeding student payments...');
   const PAYMENT_MONTHS = [5, 4, 3, 2, 1, 0]; // months back from today
-  const TUITION_FEE = 2500000; // SLL
+  const TUITION_FEE = 2500; // New Leones (NLe)
   const paymentDocs = [];
   for (const student of students) {
     for (const mBack of PAYMENT_MONTHS) {
@@ -191,7 +192,7 @@ async function main() {
 
   // ── Payroll (5 months) ──
   console.log('💰  Seeding payroll...');
-  const SALARIES = [3500000, 4000000, 3800000, 4200000];
+  const SALARIES = [3500, 4000, 3800, 4200]; // New Leones (NLe)
   const payrollDocs = [];
   for (let i = 0; i < teachers.length; i++) {
     for (const mBack of [5, 4, 3, 2, 1]) {
@@ -244,6 +245,25 @@ async function main() {
   try { await Attendance.insertMany(attendanceDocs, { ordered: false }); }
   catch (e) { /* ignore duplicate key on re-run */ }
   console.log(`    ~${attendanceDocs.length} attendance records created.`);
+
+  // ── Report Cards (Grades) ──
+  console.log('📝  Seeding grades for first student...');
+  await ReportCard.deleteMany({});
+  const firstStudent = students[0];
+  const firstStudentClasses = classes.filter(c => c.enrolled.includes(firstStudent._id));
+  const gradesDocs = firstStudentClasses.map(c => ({
+    student_id: firstStudent._id,
+    class_id: c.cls._id,
+    semester: c.cls.semester,
+    score: Math.floor(Math.random() * 30) + 70, // 70 to 100
+    grade: 'A',
+    comments: 'Excellent work this semester.',
+    entered_by: adminId
+  }));
+  if (gradesDocs.length > 0) {
+    await ReportCard.insertMany(gradesDocs);
+    console.log(`    ${gradesDocs.length} grades added for ${firstStudent.first_name} ${firstStudent.last_name}.`);
+  }
 
   // ── Summary ──
   console.log('\n✅  DEMO DATA SEEDING COMPLETE!');
