@@ -194,12 +194,18 @@ export default function ClassesPage() {
                 </div>
                 <div className="form-grid">
                   <div className="form-group">
-                    <label className="form-label">Program</label>
-                    <select className="form-select" required value={form.program}
-                      onChange={e=>setForm(f=>({...f,program:e.target.value}))}>
-                      <option value="">Select</option>
-                      {programsList.map(p=><option key={p} value={p}>{p}</option>)}
-                    </select>
+                    <label className="form-label">Program <span style={{fontSize:'11px',color:'var(--color-text-muted)'}}>(pick existing or type new)</span></label>
+                    <input
+                      className="form-input"
+                      list="program-options"
+                      required
+                      placeholder="Select or type a program name..."
+                      value={form.program}
+                      onChange={e=>setForm(f=>({...f,program:e.target.value}))}
+                    />
+                    <datalist id="program-options">
+                      {programsList.map(p=><option key={p} value={p}/>)}
+                    </datalist>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Credit Hours</label>
@@ -207,12 +213,17 @@ export default function ClassesPage() {
                       onChange={e=>setForm(f=>({...f,credit_hours:e.target.value}))} />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">Semester</label>
-                    <select className="form-select" value={form.semester}
-                      onChange={e=>setForm(f=>({...f,semester:e.target.value}))}>
-                      <option value="">Select Semester</option>
-                      {semestersList.map(s=><option key={s} value={s}>{s}</option>)}
-                    </select>
+                    <label className="form-label">Semester <span style={{fontSize:'11px',color:'var(--color-text-muted)'}}>(pick or type new)</span></label>
+                    <input
+                      className="form-input"
+                      list="semester-options"
+                      placeholder="e.g. Year 1, Semester 1"
+                      value={form.semester}
+                      onChange={e=>setForm(f=>({...f,semester:e.target.value}))}
+                    />
+                    <datalist id="semester-options">
+                      {semestersList.map(s=><option key={s} value={s}/>)}
+                    </datalist>
                   </div>
                   <div className="form-group">
                     <label className="form-label">Schedule</label>

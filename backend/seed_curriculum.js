@@ -61,18 +61,16 @@ const generateCode = (program, course, semStr) => {
   return `${pCode}${yr}${sm}-${cCode}${Math.floor(Math.random() * 90 + 10)}`;
 };
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URI)
   .then(async () => {
     console.log('Connected to DB');
-    await Class.deleteMany({}); // Wipe existing classes to use the new exact structures
-    console.log('Cleared existing classes.');
 
-    const classesToInsert = [];
-    
+    const classesToUpsert = [];
+
     for (const [program, semesters] of Object.entries(curriculum)) {
       for (const semData of semesters) {
         for (const course of semData.courses) {
-          classesToInsert.push({
+          classesToUpsert.push({
             class_name: course,
             class_code: generateCode(program, course, semData.sem),
             program: program,
@@ -83,8 +81,19 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
       }
     }
 
-    await Class.insertMany(classesToInsert);
-    console.log(`Seeded ${classesToInsert.length} courses across ${Object.keys(curriculum).length} programs.`);
+    let inserted = 0, updated = 0;
+    for (const cls of classesToUpsert) {
+      const result = await Class.updateOne(
+        { class_name: cls.class_name, program: cls.program, semester: cls.semester },
+        { $setOnInsert: cls },
+        { upsert: true }
+      );
+      if (result.upsertedCount) inserted++;
+      else updated++;
+    }
+
+    console.log(`Done. ${inserted} new courses inserted, ${updated} already existed (untouched).`);
+    console.log(`Total courses across ${Object.keys(curriculum).length} programs: ${classesToUpsert.length}`);
     process.exit(0);
   })
   .catch(err => {
