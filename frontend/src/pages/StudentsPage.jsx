@@ -4,6 +4,7 @@ import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { getAbbr, programLabel } from '../utils/programs';
 
 
 const StatusBadge = ({ status }) => {
@@ -130,7 +131,7 @@ export default function StudentsPage() {
             <label className="form-label">Program</label>
             <select className="form-select" value={program} onChange={e => { setProgram(e.target.value); setPage(1); }}>
               <option value="">All Programs</option>
-              {programsList.map(p => <option key={p} value={p}>{p}</option>)}
+              {programsList.map(p => <option key={p} value={p}>{programLabel(p)}</option>)}
             </select>
           </div>
           <div className="form-group">
@@ -175,8 +176,8 @@ export default function StudentsPage() {
                     <td style={{ color:'#fff', fontWeight:600 }}>{s.first_name} {s.last_name}</td>
                     <td>{s.email}</td>
                     <td>
-                      <span style={{ background:'var(--color-info-muted)', color:'var(--color-info)', padding:'2px 8px', borderRadius:999, fontSize:11, fontWeight:700 }}>
-                        {s.program || 'N/A'}
+                      <span className="badge badge-info" title={s.program || ''}>
+                        {getAbbr(s.program)}
                       </span>
                     </td>
                     <td><StatusBadge status={s.status} /></td>

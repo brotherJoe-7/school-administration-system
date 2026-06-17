@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import StudentSetupModal from '../components/StudentSetupModal';
+import { programLabel } from '../utils/programs';
 
 const StatCard = ({ label, value, accent, sub, onClick }) => (
   <div
@@ -251,7 +252,7 @@ export default function DashboardPage() {
             <label className="form-label" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Program Filter</label>
             <select className="form-select" value={program} onChange={e => setProgram(e.target.value)}>
               <option value="">All Faculty Programs</option>
-              {programsList.map(p => <option key={p} value={p}>{p}</option>)}
+              {programsList.map(p => <option key={p} value={p}>{programLabel(p)}</option>)}
             </select>
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>

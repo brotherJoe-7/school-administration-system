@@ -3,6 +3,7 @@ import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { getAbbr, programLabel } from '../utils/programs';
 
 export default function ClassesPage() {
   const { user } = useAuth();
@@ -109,7 +110,7 @@ export default function ClassesPage() {
             <label className="form-label">Filter by Program</label>
             <select className="form-select" value={filterProgram} onChange={e => setFilterProgram(e.target.value)}>
               <option value="">All Programs</option>
-              {programsList.map(p => <option key={p} value={p}>{p}</option>)}
+              {programsList.map(p => <option key={p} value={p}>{programLabel(p)}</option>)}
             </select>
           </div>
           <div className="form-group mb-0">
@@ -136,7 +137,9 @@ export default function ClassesPage() {
                   <tr key={c.id}>
                     <td><code style={{color:'var(--color-gold)',fontSize:'12px'}}>{c.class_code}</code></td>
                     <td style={{color:'#fff',fontWeight:600}}>{c.class_name}</td>
-                    <td><span className="badge badge-info">{c.program}</span></td>
+                    <td>
+                      <span className="badge badge-info" title={c.program}>{getAbbr(c.program)}</span>
+                    </td>
                     <td>{c.first_name ? `${c.first_name} ${c.last_name}` : <span style={{ color:'var(--color-danger)' }}>Unassigned</span>}</td>
                     <td style={{textAlign:'center'}}>{c.credit_hours}</td>
                     <td style={{fontSize:'13px',color:'var(--color-text-muted)'}}>{c.semester}</td>

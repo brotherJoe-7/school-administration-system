@@ -4,6 +4,7 @@ import ProtectedLayout from '../components/ProtectedLayout';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import { programLabel } from '../utils/programs';
 
 const STATUS_COLORS = { present:'success', absent:'danger', late:'warning', excused:'info', not_recorded:'neutral' };
 
@@ -251,7 +252,7 @@ export default function AttendancePage() {
             <label className="form-label">Filter Program</label>
             <select className="form-select" value={selectedProgram} onChange={e => setSelectedProgram(e.target.value)}>
               <option value="">All Programs</option>
-              {programsList.map(p => <option key={p} value={p}>{p}</option>)}
+              {programsList.map(p => <option key={p} value={p}>{programLabel(p)}</option>)}
             </select>
           </div>
           <div className="form-group" style={{ marginBottom:0 }}>

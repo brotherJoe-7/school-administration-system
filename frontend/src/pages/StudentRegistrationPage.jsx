@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
 import ProtectedLayout from '../components/ProtectedLayout';
+import { programLabel } from '../utils/programs';
 
 export default function StudentRegistrationPage() {
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ export default function StudentRegistrationPage() {
         <form onSubmit={handleSubmit}>
           <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>Academic Info</h2>
           <div className="form-grid">
-            <Field label="Program" name="program" options={programs} required />
+            <Field label="Program" name="program" options={programs.map(p => ({ value: p, label: programLabel(p) }))} required />
             <Field label="Year of Study" name="year_of_study" options={[1,2,3,4]} required />
           </div>
 
