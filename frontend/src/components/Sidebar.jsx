@@ -19,9 +19,9 @@ const NAV_ITEMS = {
   ],
   superadmin: [
     { label: 'Platform Overview', path: '/platform', icon: '' },
-    { label: 'AI Assistant', path: '/ai', icon: '' },
-    { label: 'System Audit', path: '/audit', icon: '' },
-    { label: 'Settings', path: '/settings', icon: '' },
+    { label: 'AI Assistant',      path: '/ai',       icon: '' },
+    { label: 'System Audit',      path: '/audit',    icon: '' },
+    { label: 'Settings',          path: '/settings', icon: '' },
   ],
   teacher: [
     { label: 'Dashboard',     path: '/dashboard',  icon: '' },
@@ -45,7 +45,9 @@ export default function Sidebar({ isOpen, onClose }) {
   if (!user) return null;
 
   const navItems = NAV_ITEMS[user.role] || [];
-  const initials = user.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : '?';
+  const initials = user.name
+    ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : '?';
 
   const handleLogout = () => {
     logout();
@@ -55,7 +57,8 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
-      {/* Logo */}
+
+      {/* ── Logo ── */}
       <div className="sidebar-logo" style={{ flexShrink: 0 }}>
         <div className="sidebar-logo-icon">SAS</div>
         <div className="sidebar-logo-text">
@@ -64,7 +67,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
       </div>
 
-      {/* Nav — scrollable */}
+      {/* ── Navigation (scrollable) ── */}
       <nav className="sidebar-nav">
         <div className="nav-section-label">Navigation</div>
         {navItems.map((item) => (
@@ -74,21 +77,104 @@ export default function Sidebar({ isOpen, onClose }) {
             className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             onClick={onClose}
           >
+            {item.icon && <span style={{ fontSize: '15px', flexShrink: 0, lineHeight: 1 }}>{item.icon}</span>}
             {item.label}
           </NavLink>
         ))}
       </nav>
 
-      {/* Footer — always pinned at bottom */}
-      <div className="sidebar-footer" style={{ flexShrink: 0 }}>
-        <div className="user-pill" style={{ marginBottom: '8px' }}>
+      {/* ── Footer (always pinned at bottom) ── */}
+      <div style={{
+        flexShrink: 0,
+        padding: '12px',
+        borderTop: '1px solid var(--color-border)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px',
+      }}>
+
+        {/* User pill */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '10px 12px',
+          borderRadius: 'var(--radius-md)',
+          background: 'var(--color-bg-hover)',
+        }}>
           <div className="user-avatar">{initials}</div>
-          <div className="user-info">
-            <div className="name">{user.name}</div>
-            <div className="role">{user.role}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {user.name}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {user.role}
+            </div>
           </div>
         </div>
-        <button className="btn btn-secondary btn-sm w-full" onClick={handleLogout}>
+
+        {/* View Website — opens in new tab */}
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '9px 12px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-border)',
+            color: 'var(--color-text-secondary)',
+            fontSize: '13px',
+            fontWeight: 500,
+            textDecoration: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'var(--color-bg-hover)';
+            e.currentTarget.style.color = 'var(--color-text-primary)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'var(--color-text-secondary)';
+          }}
+        >
+          View Website
+        </a>
+
+        {/* Sign Out */}
+        <button
+          onClick={handleLogout}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            padding: '9px 12px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid rgba(239,68,68,0.3)',
+            color: 'var(--color-danger)',
+            fontSize: '13px',
+            fontWeight: 600,
+            background: 'rgba(239,68,68,0.1)',
+            cursor: 'pointer',
+            width: '100%',
+            transition: 'all 0.15s',
+            fontFamily: 'inherit',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'var(--color-danger)';
+            e.currentTarget.style.color = '#fff';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(239,68,68,0.1)';
+            e.currentTarget.style.color = 'var(--color-danger)';
+          }}
+        >
           Sign Out
         </button>
       </div>
