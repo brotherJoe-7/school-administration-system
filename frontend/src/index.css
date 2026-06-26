@@ -44,6 +44,21 @@
   --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.2);
 }
 
+[data-theme="light"] {
+  --color-bg-primary:    #f8fafc;
+  --color-bg-secondary:  #ffffff;
+  --color-bg-card:       #ffffff;
+  --color-bg-hover:      #f1f5f9;
+  --color-border:        #e2e8f0;
+  --color-border-light:  #cbd5e1;
+
+  --color-text-primary:  #0f172a;
+  --color-text-secondary:#475569;
+  --color-text-muted:    #94a3b8;
+
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.05);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; }
@@ -197,7 +212,7 @@ a { color: inherit; text-decoration: none; }
 
 .user-avatar {
   width: 34px; height: 34px;
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+  background: var(--color-gold);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px;

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const TranscriptSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   approved_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },

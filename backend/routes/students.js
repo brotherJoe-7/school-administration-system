@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const Student = require('../models/Student');
 const Registration = require('../models/Registration');
 const Payment = require('../models/Payment');
+const Tenant = require('../models/Tenant');
 const { authenticate, authorize } = require('../middleware/auth');
 
 // GET /api/students/count
@@ -122,8 +123,10 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
         $lte: new Date(`${year}-12-31T23:59:59.999Z`)
       }
     });
-    // Auto-generate ID starting with 90500 followed by 4 digits
-    const student_number = `90500${String(count + 1).padStart(4, '0')}`;
+    // Auto-generate ID using custom tenant prefix
+    const tenant = await Tenant.findOne({ subdomain: req.tenant_id });
+    const prefix = tenant && tenant.id_prefix ? tenant.id_prefix : '90500';
+    const student_number = `${prefix}${String(count + 1).padStart(4, '0')}`;
 
     // Sanitize empty strings
     const sanitize = (val) => val === '' ? undefined : val;

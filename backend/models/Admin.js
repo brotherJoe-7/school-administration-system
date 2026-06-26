@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const AdminSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   full_name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password_hash: { type: String, required: true },

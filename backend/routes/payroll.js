@@ -3,12 +3,13 @@ const router = express.Router();
 const Payroll = require('../models/Payroll');
 const AuditLog = require('../models/AuditLog');
 const { authenticate, authorize } = require('../middleware/auth');
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 
 // GET /api/payroll - list payroll records
-router.get('/', authenticate, authorize('admin'), async (req, res) => {
+router.get('/', authenticate, authorize('admin'), tenantMiddleware, async (req, res) => {
   try {
     const { month, status } = req.query;
-    const filter = {};
+    const filter = { tenant_id: req.tenant_id };
 
     if (status) filter.status = status;
 
@@ -43,9 +44,9 @@ router.get('/', authenticate, authorize('admin'), async (req, res) => {
 });
 
 // GET /api/payroll/my-payslips (teacher)
-router.get('/my-payslips', authenticate, authorize('teacher'), async (req, res) => {
+router.get('/my-payslips', authenticate, authorize('teacher'), tenantMiddleware, async (req, res) => {
   try {
-    const payslips = await Payroll.find({ teacher_id: req.user.id }).sort({ pay_period: -1 });
+    const payslips = await Payroll.find({ teacher_id: req.user.id, tenant_id: req.tenant_id }).sort({ pay_period: -1 });
     res.json({ success: true, data: payslips });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch payslips' });
@@ -53,7 +54,7 @@ router.get('/my-payslips', authenticate, authorize('teacher'), async (req, res) 
 });
 
 // POST /api/payroll - create payroll entry
-router.post('/', authenticate, authorize('admin'), async (req, res) => {
+router.post('/', authenticate, authorize('admin'), tenantMiddleware, async (req, res) => {
   const { teacher_id, salary_amount, allowances, deductions, pay_period } = req.body;
 
   if (!teacher_id || !salary_amount || !pay_period) {
@@ -67,6 +68,7 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
     const periodDate = new Date(pay_period);
     const existing = await Payroll.findOne({
       teacher_id,
+      tenant_id: req.tenant_id,
       pay_period: {
         $gte: new Date(periodDate.getFullYear(), periodDate.getMonth(), 1),
         $lte: new Date(periodDate.getFullYear(), periodDate.getMonth() + 1, 0, 23, 59, 59)
@@ -78,6 +80,7 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
     }
 
     const newPayroll = await Payroll.create({
+      tenant_id: req.tenant_id,
       teacher_id,
       salary_amount,
       allowances: allowances || 0,
@@ -96,14 +99,15 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
 });
 
 // PUT /api/payroll/:id/approve
-router.put('/:id/approve', authenticate, authorize('admin'), async (req, res) => {
+router.put('/:id/approve', authenticate, authorize('admin'), tenantMiddleware, async (req, res) => {
   try {
-    await Payroll.findByIdAndUpdate(req.params.id, {
+    await Payroll.findOneAndUpdate({ _id: req.params.id, tenant_id: req.tenant_id }, {
       status: 'approved',
       approved_by: req.user.id,
       approved_at: new Date()
     });
     await AuditLog.create({
+      tenant_id: req.tenant_id,
       user_id: req.user.id,
       user_role: 'admin',
       action: 'APPROVE_PAYROLL',
@@ -117,10 +121,10 @@ router.put('/:id/approve', authenticate, authorize('admin'), async (req, res) =>
 });
 
 // PUT /api/payroll/:id/reject
-router.put('/:id/reject', authenticate, authorize('admin'), async (req, res) => {
+router.put('/:id/reject', authenticate, authorize('admin'), tenantMiddleware, async (req, res) => {
   const { reason } = req.body;
   try {
-    await Payroll.findByIdAndUpdate(req.params.id, {
+    await Payroll.findOneAndUpdate({ _id: req.params.id, tenant_id: req.tenant_id }, {
       status: 'rejected',
       rejection_reason: reason,
       approved_by: req.user.id,
@@ -133,12 +137,12 @@ router.put('/:id/reject', authenticate, authorize('admin'), async (req, res) => 
 });
 
 // PUT /api/payroll/:id - update pending payroll
-router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
+router.put('/:id', authenticate, authorize('admin'), tenantMiddleware, async (req, res) => {
   const { salary_amount, allowances, deductions } = req.body;
   const net_pay = parseFloat(salary_amount) + parseFloat(allowances || 0) - parseFloat(deductions || 0);
   try {
     await Payroll.findOneAndUpdate(
-      { _id: req.params.id, status: 'pending' },
+      { _id: req.params.id, status: 'pending', tenant_id: req.tenant_id },
       { salary_amount, allowances: allowances || 0, deductions: deductions || 0, net_pay }
     );
     res.json({ success: true, message: 'Payroll updated' });

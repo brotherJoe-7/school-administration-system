@@ -4,6 +4,8 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 
 import LoginPage              from './pages/LoginPage';
+import LandingPage            from './pages/LandingPage';
+import CreateSchoolPage       from './pages/CreateSchoolPage';
 import DashboardPage          from './pages/DashboardPage';
 import StudentsPage           from './pages/StudentsPage';
 import StudentRegistrationPage from './pages/StudentRegistrationPage';
@@ -17,8 +19,32 @@ import PayrollPage            from './pages/PayrollPage';
 import ApprovalsPage          from './pages/ApprovalsPage';
 import AuditLogPage           from './pages/AuditLogPage';
 import PaymentsPage           from './pages/PaymentsPage';
+import SettingsPage           from './pages/SettingsPage';
+import PlatformDashboardPage  from './pages/PlatformDashboardPage';
+import AiAssistantPage        from './pages/AiAssistantPage';
+import { PrivacyPage, TermsPage, GDPRPage, PricingPage, ContactPage } from './pages/PublicPages';
 
 function App() {
+  React.useEffect(() => {
+    const savedColor = localStorage.getItem('tenantColor');
+    if (savedColor) {
+      document.documentElement.style.setProperty('--color-gold', savedColor);
+      const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) } : null;
+      };
+      const rgb = hexToRgb(savedColor);
+      if(rgb) {
+        document.documentElement.style.setProperty('--color-gold-muted', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`);
+      }
+    }
+    
+    const savedTheme = localStorage.getItem('themeMode');
+    if (savedTheme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -37,11 +63,18 @@ function App() {
           }}
         />
         <Routes>
-          <Route path="/"         element={<Navigate to="/login" replace />} />
+          <Route path="/"         element={<LandingPage />} />
+          <Route path="/create-school" element={<CreateSchoolPage />} />
           <Route path="/login"    element={<LoginPage />} />
           <Route path="/setup"    element={<StudentSetupPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/students/register" element={<StudentRegistrationPage />} />
+          
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms"   element={<TermsPage />} />
+          <Route path="/gdpr"    element={<GDPRPage />} />
 
           <Route path="/dashboard"  element={<DashboardPage />} />
           <Route path="/students"   element={<StudentsPage />} />
@@ -54,6 +87,9 @@ function App() {
           <Route path="/payments"   element={<PaymentsPage />} />
           <Route path="/approvals"  element={<ApprovalsPage />} />
           <Route path="/audit"      element={<AuditLogPage />} />
+          <Route path="/settings"   element={<SettingsPage />} />
+          <Route path="/ai"         element={<AiAssistantPage />} />
+          <Route path="/platform"   element={<PlatformDashboardPage />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

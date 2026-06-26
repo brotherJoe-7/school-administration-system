@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const PaymentSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
   amount_paid: { type: Number, required: true },
   amount_due: { type: Number, required: true },

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const RegistrationSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
   program: { type: String, required: true },
   year_of_study: { type: Number, default: 1 },

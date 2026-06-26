@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const AttendanceSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
   class_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Class', required: true },
   date: { type: Date, required: true },

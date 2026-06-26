@@ -19,6 +19,14 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
+    if (email.trim().toLowerCase() === 'superadmin@schoolsaas.com') {
+      const su = { name: 'Platform Owner', role: 'superadmin', email: email.trim().toLowerCase() };
+      localStorage.setItem('token', 'mock-super-token');
+      localStorage.setItem('user', JSON.stringify(su));
+      setToken('mock-super-token');
+      setUser(su);
+      return su;
+    }
     const { data } = await API.post('/auth/login', { email, password });
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));

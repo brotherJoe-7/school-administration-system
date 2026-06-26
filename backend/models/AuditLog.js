@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const AuditLogSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   user_id: { type: mongoose.Schema.Types.ObjectId }, // Can refer to Admin, Teacher, or Student
   user_role: { type: String },
   action: { type: String, required: true },

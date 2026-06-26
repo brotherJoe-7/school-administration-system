@@ -60,6 +60,7 @@ export default function DashboardPage() {
 
   // Filters state
   const [program, setProgram] = useState('');
+  const [faculty, setFaculty] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
@@ -75,6 +76,7 @@ export default function DashboardPage() {
     try {
       const params = new URLSearchParams();
       if (program) params.append('program', program);
+      if (faculty) params.append('faculty', faculty);
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
@@ -127,7 +129,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadData();
-  }, [user, program, startDate, endDate]);
+  }, [user, program, faculty, startDate, endDate]);
 
   const formatLeones = (v) => `Le ${(v / 1000000).toFixed(1)}M`;
 
@@ -256,6 +258,15 @@ export default function DashboardPage() {
             </select>
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Faculty</label>
+            <select className="form-select" value={faculty} onChange={e => setFaculty(e.target.value)}>
+              <option value="">All Faculties</option>
+              <option value="IT">Information Technology</option>
+              <option value="Business">Business</option>
+              <option value="Engineering">Engineering</option>
+            </select>
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 700 }}>Start Date</label>
             <input type="date" className="form-input" value={startDate} onChange={e => setStartDate(e.target.value)} />
           </div>
@@ -264,7 +275,7 @@ export default function DashboardPage() {
             <input type="date" className="form-input" value={endDate} onChange={e => setEndDate(e.target.value)} />
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setProgram(''); setStartDate(''); setEndDate(''); }}>
+            <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => { setProgram(''); setFaculty(''); setStartDate(''); setEndDate(''); }}>
               Clear
             </button>
             <button className="btn btn-primary" style={{ flex: 1 }} onClick={loadData}>

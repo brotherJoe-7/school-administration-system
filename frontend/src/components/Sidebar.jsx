@@ -14,6 +14,14 @@ const NAV_ITEMS = {
     { label: 'Payroll',         path: '/payroll',      icon: '' },
     { label: 'Approval Queue',  path: '/approvals',    icon: '' },
     { label: 'Audit Log',       path: '/audit',        icon: '' },
+    { label: 'AI Assistant',    path: '/ai',           icon: '' },
+    { label: 'Settings',        path: '/settings',     icon: '' },
+  ],
+  superadmin: [
+    { label: 'Platform Overview', path: '/platform', icon: '' },
+    { label: 'AI Assistant', path: '/ai', icon: '' },
+    { label: 'System Audit', path: '/audit', icon: '' },
+    { label: 'Settings', path: '/settings', icon: '' },
   ],
   teacher: [
     { label: 'Dashboard',     path: '/dashboard',  icon: '' },

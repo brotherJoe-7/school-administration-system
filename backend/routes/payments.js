@@ -3,12 +3,13 @@ const router = express.Router();
 const Payment = require('../models/Payment');
 const Class = require('../models/Class');
 const { authenticate } = require('../middleware/auth');
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 
 // GET /api/payments/total
-router.get('/total', authenticate, async (req, res) => {
+router.get('/total', authenticate, tenantMiddleware, async (req, res) => {
   try {
     const { program, startDate, endDate } = req.query;
-    const match = { status: 'verified' };
+    const match = { status: 'verified', tenant_id: req.tenant_id };
 
     if (startDate && endDate) {
       match.payment_date = { $gte: new Date(startDate), $lte: new Date(endDate) };

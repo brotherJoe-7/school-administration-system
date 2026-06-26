@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const TeacherSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   teacher_number: { type: String, required: true, unique: true },
   first_name: { type: String, required: true },
   last_name: { type: String, required: true },

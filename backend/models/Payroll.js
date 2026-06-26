@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const PayrollSchema = new mongoose.Schema({
+  tenant_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   teacher_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Teacher', required: true },
   salary_amount: { type: Number, required: true },
   allowances: { type: Number, default: 0.00 },

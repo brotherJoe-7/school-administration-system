@@ -36,7 +36,11 @@ export default function LoginPage() {
     try {
       const user = await login(email, password);
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
-      navigate('/dashboard');
+      if (user.role === 'superadmin') {
+        navigate('/platform');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed. Check your credentials.');
     } finally {

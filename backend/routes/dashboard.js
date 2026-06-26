@@ -8,7 +8,7 @@ const Attendance = require('../models/Attendance');
 const Registration = require('../models/Registration');
 const Payroll = require('../models/Payroll');
 const { authenticate, authorize } = require('../middleware/auth');
-
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 // Helper: build a date range filter
 function buildDateFilter(field, startDate, endDate) {
   const now = new Date();
@@ -22,25 +22,42 @@ function buildDateFilter(field, startDate, endDate) {
 }
 
 // GET /api/dashboard/stats
-router.get('/stats', authenticate, async (req, res) => {
+router.get('/stats', authenticate, tenantMiddleware, async (req, res) => {
   try {
     const { program, startDate, endDate } = req.query;
 
+    let classIdsForRole = null;
+    let studentIdsForRole = null;
+
+    if (req.user.role === 'teacher') {
+      const teacherClasses = await Class.find({ teacher_id: req.user.id, tenant_id: req.tenant_id }).select('_id students');
+      classIdsForRole = teacherClasses.map(c => c._id);
+      studentIdsForRole = [...new Set(teacherClasses.flatMap(c => c.students.map(id => id.toString())))];
+    } else if (req.user.role === 'student') {
+      const studentClasses = await Class.find({ students: req.user.id, tenant_id: req.tenant_id }).select('_id');
+      classIdsForRole = studentClasses.map(c => c._id);
+      studentIdsForRole = [req.user.id];
+    }
+
     // --- Total students ---
-    let studentFilter = { status: 'active' };
+    let studentFilter = { status: 'active', tenant_id: req.tenant_id };
+    if (studentIdsForRole) {
+      studentFilter._id = { $in: studentIdsForRole };
+    }
     if (program) {
       const classesInProgram = await Class.find({ program }).select('students');
-      const studentIds = [...new Set(classesInProgram.flatMap(c => c.students.map(id => id.toString())))];
-      if (studentIds.length > 0) {
-        studentFilter._id = { $in: studentIds };
+      const programStudentIds = classesInProgram.flatMap(c => c.students.map(id => id.toString()));
+      if (studentFilter._id) {
+        studentFilter._id.$in = studentFilter._id.$in.filter(id => programStudentIds.includes(id));
       } else {
-        studentFilter._id = { $in: [] }; // No students in this program
+        studentFilter._id = { $in: programStudentIds };
       }
     }
     const total_students = await Student.countDocuments(studentFilter);
 
     // --- Total teachers ---
-    let teacherFilter = { status: 'active' };
+    let teacherFilter = { status: 'active', tenant_id: req.tenant_id };
+    if (req.user.role === 'teacher') teacherFilter._id = req.user.id;
     if (program) {
       const teachersInProgram = await Class.find({ program }).distinct('teacher_id');
       teacherFilter._id = { $in: teachersInProgram };
@@ -48,19 +65,25 @@ router.get('/stats', authenticate, async (req, res) => {
     const total_teachers = await Teacher.countDocuments(teacherFilter);
 
     // --- Total classes ---
-    const classFilter = program ? { program } : {};
+    const classFilter = program ? { program, tenant_id: req.tenant_id } : { tenant_id: req.tenant_id };
+    if (classIdsForRole) {
+      classFilter._id = { $in: classIdsForRole };
+    }
     const total_classes = await Class.countDocuments(classFilter);
 
     // --- Tuition collected ---
-    const paymentMatch = { status: 'verified' };
+    const paymentMatch = { status: 'verified', tenant_id: req.tenant_id };
     if (startDate && endDate) {
       paymentMatch.payment_date = { $gte: new Date(startDate), $lte: new Date(endDate) };
     }
+    if (studentIdsForRole) {
+      paymentMatch.student_id = { $in: studentIdsForRole };
+    }
     if (program) {
-      const classIds = (await Class.find({ program }).select('_id')).map(c => c._id);
-      // Find students in those classes
       const studentsInProgram = (await Class.find({ program }).select('students')).flatMap(c => c.students);
-      paymentMatch.student_id = { $in: studentsInProgram };
+      paymentMatch.student_id = paymentMatch.student_id 
+        ? { $in: paymentMatch.student_id.$in.filter(id => studentsInProgram.includes(id)) }
+        : { $in: studentsInProgram };
     }
     const tuitionResult = await Payment.aggregate([
       { $match: paymentMatch },
@@ -68,12 +91,20 @@ router.get('/stats', authenticate, async (req, res) => {
     ]);
     const tuition_collected = tuitionResult[0]?.total || 0;
 
-    // --- Attendance rate (current month or date range) ---
+    // --- Attendance rate ---
     const attDateFilter = buildDateFilter('date', startDate, endDate);
-    const attMatch = { ...attDateFilter };
+    const attMatch = { ...attDateFilter, tenant_id: req.tenant_id };
+    if (classIdsForRole) {
+      attMatch.class_id = { $in: classIdsForRole };
+    }
+    if (req.user.role === 'student') {
+      attMatch.student_id = req.user.id;
+    }
     if (program) {
       const classIds = (await Class.find({ program }).select('_id')).map(c => c._id);
-      attMatch.class_id = { $in: classIds };
+      attMatch.class_id = attMatch.class_id 
+        ? { $in: attMatch.class_id.$in.filter(id => classIds.some(cid => cid.toString() === id.toString())) }
+        : { $in: classIds };
     }
     const attResult = await Attendance.aggregate([
       { $match: attMatch },
@@ -89,9 +120,12 @@ router.get('/stats', authenticate, async (req, res) => {
       : 0;
 
     // --- Pending registrations ---
-    const pendingFilter = { status: 'pending' };
-    if (program) pendingFilter.program = program;
-    const pending_registrations = await Registration.countDocuments(pendingFilter);
+    let pending_registrations = 0;
+    if (req.user.role === 'admin') {
+      const pendingFilter = { status: 'pending', tenant_id: req.tenant_id };
+      if (program) pendingFilter.program = program;
+      pending_registrations = await Registration.countDocuments(pendingFilter);
+    }
 
     res.json({
       success: true,
@@ -104,7 +138,7 @@ router.get('/stats', authenticate, async (req, res) => {
 });
 
 // GET /api/dashboard/attendance-trend
-router.get('/attendance-trend', authenticate, async (req, res) => {
+router.get('/attendance-trend', authenticate, tenantMiddleware, async (req, res) => {
   try {
     const { program, startDate, endDate } = req.query;
 
@@ -113,11 +147,22 @@ router.get('/attendance-trend', authenticate, async (req, res) => {
     const dateFrom = startDate ? new Date(startDate) : defaultStart;
     const dateTo = endDate ? new Date(endDate) : now;
 
-    const match = { date: { $gte: dateFrom, $lte: dateTo } };
+    const match = { date: { $gte: dateFrom, $lte: dateTo }, tenant_id: req.tenant_id };
+
+    if (req.user.role === 'teacher') {
+      const teacherClasses = await Class.find({ teacher_id: req.user.id, tenant_id: req.tenant_id }).select('_id');
+      match.class_id = { $in: teacherClasses.map(c => c._id) };
+    } else if (req.user.role === 'student') {
+      match.student_id = req.user.id;
+    }
 
     if (program) {
       const classIds = (await Class.find({ program }).select('_id')).map(c => c._id);
-      match.class_id = { $in: classIds };
+      if (match.class_id) {
+        match.class_id.$in = match.class_id.$in.filter(id => classIds.some(cid => cid.toString() === id.toString()));
+      } else {
+        match.class_id = { $in: classIds };
+      }
     }
 
     const rows = await Attendance.aggregate([
@@ -138,7 +183,7 @@ router.get('/attendance-trend', authenticate, async (req, res) => {
 });
 
 // GET /api/dashboard/tuition-progress
-router.get('/tuition-progress', authenticate, async (req, res) => {
+router.get('/tuition-progress', authenticate, tenantMiddleware, async (req, res) => {
   try {
     const { program, startDate, endDate } = req.query;
 
@@ -147,11 +192,19 @@ router.get('/tuition-progress', authenticate, async (req, res) => {
     const dateFrom = startDate ? new Date(startDate) : defaultStart;
     const dateTo = endDate ? new Date(endDate) : now;
 
-    const match = { status: 'verified', payment_date: { $gte: dateFrom, $lte: dateTo } };
+    const match = { status: 'verified', payment_date: { $gte: dateFrom, $lte: dateTo }, tenant_id: req.tenant_id };
+
+    if (req.user.role === 'student') {
+      match.student_id = req.user.id;
+    }
 
     if (program) {
       const studentsInProgram = (await Class.find({ program }).select('students')).flatMap(c => c.students);
-      match.student_id = { $in: studentsInProgram };
+      if (match.student_id) {
+        // if user is student, we don't really need to filter by program unless they want to, but let's be safe
+      } else {
+        match.student_id = { $in: studentsInProgram };
+      }
     }
 
     const rows = await Payment.aggregate([
@@ -172,7 +225,7 @@ router.get('/tuition-progress', authenticate, async (req, res) => {
 });
 
 // GET /api/dashboard/payroll-summary
-router.get('/payroll-summary', authenticate, authorize('admin'), async (req, res) => {
+router.get('/payroll-summary', authenticate, authorize('admin'), tenantMiddleware, async (req, res) => {
   try {
     const { program, startDate, endDate } = req.query;
 
@@ -181,7 +234,7 @@ router.get('/payroll-summary', authenticate, authorize('admin'), async (req, res
     const dateFrom = startDate ? new Date(startDate) : defaultStart;
     const dateTo = endDate ? new Date(endDate) : now;
 
-    const match = { pay_period: { $gte: dateFrom, $lte: dateTo } };
+    const match = { pay_period: { $gte: dateFrom, $lte: dateTo }, tenant_id: req.tenant_id };
 
     if (program) {
       const teacherIds = (await Class.find({ program }).distinct('teacher_id'));

@@ -4,12 +4,13 @@ const Attendance = require('../models/Attendance');
 const Class = require('../models/Class');
 const AuditLog = require('../models/AuditLog');
 const { authenticate, authorize } = require('../middleware/auth');
+const tenantMiddleware = require('../middleware/tenantMiddleware');
 
 // GET /api/attendance/rate
-router.get('/rate', authenticate, async (req, res) => {
+router.get('/rate', authenticate, tenantMiddleware, async (req, res) => {
   try {
     const { program, startDate, endDate } = req.query;
-    const match = {};
+    const match = { tenant_id: req.tenant_id };
 
     if (startDate && endDate) {
       match.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
@@ -40,10 +41,10 @@ router.get('/rate', authenticate, async (req, res) => {
 });
 
 // GET /api/attendance - fetch attendance records
-router.get('/', authenticate, async (req, res) => {
+router.get('/', authenticate, tenantMiddleware, async (req, res) => {
   try {
     const { class_id, date, student_id } = req.query;
-    const filter = {};
+    const filter = { tenant_id: req.tenant_id };
 
     if (class_id) filter.class_id = class_id;
     if (date) filter.date = new Date(date);
@@ -78,7 +79,7 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // GET /api/attendance/class/:classId/date/:date - get class roster for a day
-router.get('/class/:classId/date/:date', authenticate, authorize('admin', 'teacher'), async (req, res) => {
+router.get('/class/:classId/date/:date', authenticate, authorize('admin', 'teacher'), tenantMiddleware, async (req, res) => {
   try {
     const { classId, date } = req.params;
     const targetDate = new Date(date);
@@ -92,7 +93,8 @@ router.get('/class/:classId/date/:date', authenticate, authorize('admin', 'teach
 
     const attendanceRecords = await Attendance.find({
       class_id: classId,
-      date: targetDate
+      date: targetDate,
+      tenant_id: req.tenant_id
     });
 
     const attMap = {};
@@ -121,7 +123,7 @@ router.get('/class/:classId/date/:date', authenticate, authorize('admin', 'teach
 });
 
 // POST /api/attendance/submit - submit attendance for a class
-router.post('/submit', authenticate, authorize('admin', 'teacher'), async (req, res) => {
+router.post('/submit', authenticate, authorize('admin', 'teacher'), tenantMiddleware, async (req, res) => {
   const { class_id, date, records } = req.body;
 
   if (!class_id || !date || !Array.isArray(records)) {
@@ -134,7 +136,7 @@ router.post('/submit', authenticate, authorize('admin', 'teacher'), async (req, 
     for (const record of records) {
       const { student_id, status } = record;
       await Attendance.findOneAndUpdate(
-        { student_id, class_id, date: targetDate },
+        { student_id, class_id, date: targetDate, tenant_id: req.tenant_id },
         { status, recorded_by: req.user.id },
         { upsert: true, new: true }
       );
@@ -142,6 +144,7 @@ router.post('/submit', authenticate, authorize('admin', 'teacher'), async (req, 
 
     // Log the attendance submission in AuditLog
     await AuditLog.create({
+      tenant_id: req.tenant_id,
       user_id: req.user.id,
       user_role: req.user.role,
       action: 'SUBMIT_ATTENDANCE',
@@ -158,9 +161,9 @@ router.post('/submit', authenticate, authorize('admin', 'teacher'), async (req, 
 });
 
 // GET /api/attendance/report/student/:studentId
-router.get('/report/student/:studentId', authenticate, async (req, res) => {
+router.get('/report/student/:studentId', authenticate, tenantMiddleware, async (req, res) => {
   try {
-    const records = await Attendance.find({ student_id: req.params.studentId }).populate('class_id', 'class_name');
+    const records = await Attendance.find({ student_id: req.params.studentId, tenant_id: req.tenant_id }).populate('class_id', 'class_name');
     const grouped = {};
 
     records.forEach(r => {

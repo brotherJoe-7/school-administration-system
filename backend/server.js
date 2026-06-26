@@ -62,7 +62,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL || '*',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
 }));
 
 // Cookie security
@@ -171,6 +171,10 @@ app.use('/api/approvals', require('./routes/approvals'));
 app.use('/api/audit',     require('./routes/audit'));
 app.use('/api/classes',   require('./routes/classes'));
 app.use('/api/payments',  require('./routes/payments'));
+app.use('/api/ai',        require('./routes/ai'));
+app.use('/api/public',    require('./routes/public'));
+app.use('/api/platform',  require('./routes/platform'));
+app.use('/api/settings',  require('./routes/settings'));
 
 // Health Check
 app.get('/health', (req, res) => {
