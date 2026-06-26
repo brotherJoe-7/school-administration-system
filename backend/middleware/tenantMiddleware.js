@@ -24,10 +24,12 @@ const tenantMiddleware = async (req, res, next) => {
         else if (req.user.role === 'teacher') userRecord = await Teacher.findById(req.user.id);
         else if (req.user.role === 'student') userRecord = await Student.findById(req.user.id);
 
-        if (userRecord && userRecord.tenant_id.toString() !== tenantId) {
-            return res.status(403).json({ success: false, message: 'Access denied. You do not belong to this tenant.' });
+        if (userRecord) {
+            const userTenantId = userRecord.tenant_id ? userRecord.tenant_id.toString() : null;
+            if (userTenantId && tenantId !== 'default-tenant' && userTenantId !== tenantId) {
+                return res.status(403).json({ success: false, message: 'Access denied. You do not belong to this tenant.' });
+            }
         }
-    }
 
     next();
   } catch (error) {

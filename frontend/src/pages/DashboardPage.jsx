@@ -150,9 +150,16 @@ export default function DashboardPage() {
         tuition_collected: statsData.tuition_collected,
         pending_approvals: statsData.pending_registrations,
       };
+      let promptStr = `Generate a brief 3-4 sentence executive dashboard summary for the school administrator. Be direct, professional and data-driven. Highlight any concerns if attendance is below 80% or pending approvals are high.`;
+      if (user?.role === 'teacher') {
+        promptStr = `Generate a brief 2-3 sentence dashboard summary for a teacher. Highlight their class count, student count, and attendance rates. Be encouraging and professional.`;
+      } else if (user?.role === 'student') {
+        promptStr = `Generate a brief 2-3 sentence dashboard summary for a student. Highlight their attendance rate and any tuition payments made. Be encouraging.`;
+      }
+
       const { data } = await API.post('/ai/query', {
-        query: `Generate a brief 3-4 sentence executive dashboard summary for the school administrator. Be direct, professional and data-driven. Highlight any concerns if attendance is below 80% or pending approvals are high.`,
-        contextType: user?.role === 'superadmin' ? 'global platform' : 'school',
+        query: promptStr,
+        contextType: user?.role === 'superadmin' ? 'global platform' : (user?.role === 'teacher' ? 'teacher dashboard' : (user?.role === 'student' ? 'student dashboard' : 'school')),
         contextData,
       });
       if (data.success) setAiOverview(data.data.answer);
@@ -166,7 +173,7 @@ export default function DashboardPage() {
 
   // Auto-fetch AI overview whenever stats change
   useEffect(() => {
-    if (stats && (user?.role === 'admin' || user?.role === 'superadmin')) {
+    if (stats && user?.role) {
       fetchAiOverview(stats);
     }
   }, [stats]);
@@ -265,7 +272,7 @@ export default function DashboardPage() {
             {user?.role === 'student' && 'Track your academic progress and records'}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flexShrink: 0, marginTop: '8px' }}>
           {(user?.role === 'admin' || user?.role === 'teacher') && (
             <button
               className="btn btn-primary"
@@ -478,10 +485,10 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* ── AI Overview Panel (auto-generated, admin/superadmin only) ── */}
-          {(user?.role === 'admin' || user?.role === 'superadmin') && (
+          {/* ── AI Overview Panel (auto-generated, all roles) ── */}
+          {user && (
             <div className="card mb-20" style={{ borderLeft: '4px solid var(--color-gold)', background: 'var(--color-bg-card)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div>
                     <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>AI Dashboard Overview</h3>
