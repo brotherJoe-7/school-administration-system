@@ -11,7 +11,13 @@ router.get('/', authenticate, tenantMiddleware, async (req, res) => {
     const limit = parseInt(req.query.limit) || 20;
     const skip  = (page - 1) * limit;
 
-    const filter = { tenant_id: req.tenant_id };
+    // Support SuperAdmin viewing all logs, or default to tenant
+    const filter = {};
+    if (req.user.role !== 'superadmin') {
+      if (req.tenant_id && req.tenant_id !== 'default-tenant') {
+        filter.tenant_id = req.tenant_id;
+      }
+    }
 
     // Non-admins only see their own activity
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
@@ -61,7 +67,12 @@ router.get('/', authenticate, tenantMiddleware, async (req, res) => {
 // GET /api/audit/recent - Get last 5 logs for dashboard widget
 router.get('/recent', authenticate, tenantMiddleware, async (req, res) => {
   try {
-    const filter = { tenant_id: req.tenant_id };
+    const filter = {};
+    if (req.user.role !== 'superadmin') {
+      if (req.tenant_id && req.tenant_id !== 'default-tenant') {
+        filter.tenant_id = req.tenant_id;
+      }
+    }
 
     // Non-admins only see their own recent activity
     if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
