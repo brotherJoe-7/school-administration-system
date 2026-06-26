@@ -53,20 +53,35 @@ export default function AiAssistantPage() {
 
   return (
     <ProtectedLayout>
-      <div style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
+      <div className="ai-fullscreen-mobile" style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         
         {/* Header */}
-        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
           <div>
-            <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0 }}>
-              {isSuperAdmin ? 'Platform AI Assistant' : 'School AI Assistant'}
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 800, margin: 0 }}>
+                {isSuperAdmin ? 'Platform AI Assistant' : 'School AI Assistant'}
+              </h1>
+            </div>
             <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', margin: '4px 0 0 0' }}>
               Query your {isSuperAdmin ? 'global platform metrics' : 'administrative data'} using natural language.
             </p>
           </div>
-          <div style={{ background: 'var(--color-gold)', color: '#000', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px' }}>
-            GEMINI POWERED
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+            <div style={{ background: 'var(--color-gold)', color: '#000', padding: '4px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: 800, letterSpacing: '0.5px', display: 'flex', alignItems: 'center' }}>
+              GEMINI 2.5
+            </div>
+            <button 
+              onClick={() => window.history.back()} 
+              style={{ 
+                background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)', border: 'none', 
+                borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', 
+                justifyContent: 'center', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold' 
+              }}
+              title="Close AI Assistant"
+            >
+              ✕
+            </button>
           </div>
         </div>
 
