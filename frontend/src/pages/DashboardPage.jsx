@@ -162,7 +162,11 @@ export default function DashboardPage() {
         contextType: user?.role === 'superadmin' ? 'global platform' : (user?.role === 'teacher' ? 'teacher dashboard' : (user?.role === 'student' ? 'student dashboard' : 'school')),
         contextData,
       });
-      if (data.success) setAiOverview(data.data.answer);
+      if (data.success) {
+        setAiOverview(data.data.answer);
+      } else {
+        setAiOverview(`⚠️ ${data.message}`);
+      }
     } catch { /* silent — AI overview is optional */ }
     setAiLoading(false);
   };

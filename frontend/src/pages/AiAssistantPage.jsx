@@ -41,7 +41,7 @@ export default function AiAssistantPage() {
       if (data.success) {
         setMessages(prev => [...prev, { role: 'ai', content: data.data.answer }]);
       } else {
-        setMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I encountered an error. Please try again.' }]);
+        setMessages(prev => [...prev, { role: 'ai', content: data.message || 'Sorry, I encountered an error. Please try again.' }]);
       }
     } catch (err) {
       console.error(err);

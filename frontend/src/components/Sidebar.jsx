@@ -81,104 +81,57 @@ export default function Sidebar({ isOpen, onClose }) {
             {item.label}
           </NavLink>
         ))}
-      </nav>
 
-      {/* ── Footer (always pinned at bottom) ── */}
-      <div style={{
-        flexShrink: 0,
-        padding: '12px',
-        borderTop: '1px solid var(--color-border)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-        paddingBottom: '20px', // Extra padding for mobile bottom bar clearance
-      }}>
-
-        {/* User pill */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '8px 10px',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--color-bg-hover)',
-          marginBottom: '2px'
-        }}>
-          <div className="user-avatar" style={{ width: 28, height: 28, fontSize: '11px' }}>{initials}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user.name}
-            </div>
-            <div style={{ fontSize: '9px', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              {user.role}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-          {/* View Website */}
+        {/* ── Action Buttons (Moved inside scrollable area for mobile safety) ── */}
+        <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <a
             href="/"
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-              color: 'var(--color-text-secondary)',
-              fontSize: '12px',
-              fontWeight: 500,
-              textDecoration: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              transition: 'all 0.15s',
-              textAlign: 'center'
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '10px 12px', borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)',
+              fontSize: '13px', fontWeight: 500, textDecoration: 'none', transition: 'all 0.15s',
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'var(--color-bg-hover)';
-              e.currentTarget.style.color = 'var(--color-text-primary)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--color-text-secondary)';
-            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-bg-hover)'; e.currentTarget.style.color = 'var(--color-text-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-secondary)'; }}
           >
-            Website
+            <span style={{ fontSize: '15px' }}>🌐</span> View Website
           </a>
 
-          {/* Sign Out */}
           <button
             onClick={handleLogout}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '8px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid rgba(239,68,68,0.3)',
-              color: 'var(--color-danger)',
-              fontSize: '12px',
-              fontWeight: 600,
-              background: 'rgba(239,68,68,0.1)',
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'all 0.15s',
-              fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '10px 12px', borderRadius: 'var(--radius-md)',
+              border: '1px solid rgba(239,68,68,0.3)', color: 'var(--color-danger)',
+              fontSize: '13px', fontWeight: 600, background: 'rgba(239,68,68,0.1)',
+              cursor: 'pointer', width: '100%', transition: 'all 0.15s', fontFamily: 'inherit', textAlign: 'left'
             }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'var(--color-danger)';
-              e.currentTarget.style.color = '#fff';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(239,68,68,0.1)';
-              e.currentTarget.style.color = 'var(--color-danger)';
-            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-danger)'; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = 'var(--color-danger)'; }}
           >
-            Sign Out
+            <span style={{ fontSize: '15px' }}>🚪</span> Sign Out
           </button>
+        </div>
+      </nav>
+
+      {/* ── Footer (always pinned at bottom) ── */}
+      <div style={{
+        flexShrink: 0, padding: '12px', borderTop: '1px solid var(--color-border)', background: 'var(--color-bg-secondary)'
+      }}>
+        {/* User pill */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: 'var(--radius-md)', background: 'var(--color-bg-hover)' }}>
+          <div className="user-avatar" style={{ width: 32, height: 32, fontSize: '12px' }}>{initials}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {user.name}
+            </div>
+            <div style={{ fontSize: '10px', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {user.role}
+            </div>
+          </div>
         </div>
       </div>
     </aside>

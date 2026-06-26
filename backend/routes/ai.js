@@ -61,7 +61,8 @@ Use this context data to answer if relevant: ${JSON.stringify(contextData || {})
     res.json({ success: true, data: { answer: text } });
   } catch (error) {
     console.error("Gemini Error:", error);
-    res.status(500).json({ success: false, message: 'AI query processing failed', error: error.message });
+    // Return 200 so axios doesn't throw. We want the frontend to see the exact API key error!
+    res.status(200).json({ success: false, message: `Gemini API Error: ${error.message}` });
   }
 });
 
