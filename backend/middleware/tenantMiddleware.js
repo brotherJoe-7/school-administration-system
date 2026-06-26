@@ -30,6 +30,7 @@ const tenantMiddleware = async (req, res, next) => {
                 return res.status(403).json({ success: false, message: 'Access denied. You do not belong to this tenant.' });
             }
         }
+    }
 
     next();
   } catch (error) {
