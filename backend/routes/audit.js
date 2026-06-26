@@ -14,7 +14,8 @@ router.get('/', authenticate, tenantMiddleware, async (req, res) => {
     // Support SuperAdmin viewing all logs, or default to tenant
     const filter = {};
     if (req.user.role !== 'superadmin') {
-      if (req.tenant_id && req.tenant_id !== 'default-tenant') {
+      const mongoose = require('mongoose');
+      if (req.tenant_id && mongoose.Types.ObjectId.isValid(req.tenant_id)) {
         filter.tenant_id = req.tenant_id;
       }
     }
@@ -69,7 +70,8 @@ router.get('/recent', authenticate, tenantMiddleware, async (req, res) => {
   try {
     const filter = {};
     if (req.user.role !== 'superadmin') {
-      if (req.tenant_id && req.tenant_id !== 'default-tenant') {
+      const mongoose = require('mongoose');
+      if (req.tenant_id && mongoose.Types.ObjectId.isValid(req.tenant_id)) {
         filter.tenant_id = req.tenant_id;
       }
     }

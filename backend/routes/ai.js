@@ -47,7 +47,7 @@ router.post('/query', authenticate, tenantMiddleware, async (req, res) => {
 
     // Call Real Gemini API
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     
     const prompt = `You are an AI Assistant for a School Administration Platform. You are talking to an admin of a ${contextType || 'school'}. 
 Please answer the following administrative query in a helpful, concise, professional tone. 
