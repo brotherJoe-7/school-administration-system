@@ -28,6 +28,11 @@ export default function StudentsPage() {
   const [paymentForm, setPaymentForm] = useState({ amount_paid:'', amount_due:'', payment_date:'', payment_method:'', reference:'', semester:'' });
   const [loadingPayments, setLoadingPayments] = useState(false);
 
+  // Parent linking
+  const [parentStudent, setParentStudent] = useState(null);
+  const [parentForm, setParentForm] = useState({ first_name:'', last_name:'', email:'', phone:'', password:'' });
+  const [parentLoading, setParentLoading] = useState(false);
+
   useEffect(() => {
     API.get('/classes/programs')
       .then(res => setProgramsList(res.data.data || []))
@@ -94,6 +99,21 @@ export default function StudentsPage() {
       openPayments(selectedStudent); // Refresh payments
     } catch (err) {
       toast.error('Failed to record payment');
+    }
+  };
+
+  const handleLinkParent = async (e) => {
+    e.preventDefault();
+    setParentLoading(true);
+    try {
+      await API.post('/parents', { ...parentForm, student_id: parentStudent.id });
+      toast.success(`Parent account created! Login: ${parentForm.email}`);
+      setParentStudent(null);
+      setParentForm({ first_name:'', last_name:'', email:'', phone:'', password:'' });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to create parent');
+    } finally {
+      setParentLoading(false);
     }
   };
 
@@ -190,11 +210,12 @@ export default function StudentsPage() {
                       {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
                     </td>
                     <td>
-                      <div style={{ display:'flex', gap:'6px' }}>
+                      <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
                         <Link to={`/reports/transcript/${s.id}`} className="btn btn-secondary btn-sm">Transcript</Link>
                         {user?.role === 'admin' && (
                           <>
                             <button className="btn btn-secondary btn-sm" onClick={() => openPayments(s)}>Payments</button>
+                            <button className="btn btn-secondary btn-sm" style={{ color:'#7C3AED' }} onClick={() => setParentStudent(s)}>Link Parent</button>
                             <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(s.id, s.status)}>
                               {s.status === 'suspended' ? 'Activate' : 'Suspend'}
                             </button>
@@ -295,6 +316,53 @@ export default function StudentsPage() {
                   </table>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Link Parent Modal */}
+      {parentStudent && (
+        <div className="modal-overlay" onClick={() => setParentStudent(null)}>
+          <div className="modal-box" style={{ maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Link Parent to {parentStudent.first_name} {parentStudent.last_name}</h3>
+              <button className="btn btn-secondary btn-sm" onClick={() => setParentStudent(null)}>x</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+                Create a new parent account or enter an existing parent's email to link them to this student.
+              </p>
+              <form onSubmit={handleLinkParent} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                  <div className="form-group" style={{ marginBottom:0 }}>
+                    <label className="form-label">First Name</label>
+                    <input className="form-input" required value={parentForm.first_name} onChange={e => setParentForm({...parentForm, first_name: e.target.value})} />
+                  </div>
+                  <div className="form-group" style={{ marginBottom:0 }}>
+                    <label className="form-label">Last Name</label>
+                    <input className="form-input" required value={parentForm.last_name} onChange={e => setParentForm({...parentForm, last_name: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group" style={{ marginBottom:0 }}>
+                  <label className="form-label">Email Address</label>
+                  <input className="form-input" type="email" required value={parentForm.email} onChange={e => setParentForm({...parentForm, email: e.target.value})} />
+                </div>
+                <div className="form-group" style={{ marginBottom:0 }}>
+                  <label className="form-label">Phone (optional)</label>
+                  <input className="form-input" value={parentForm.phone} onChange={e => setParentForm({...parentForm, phone: e.target.value})} />
+                </div>
+                <div className="form-group" style={{ marginBottom:0 }}>
+                  <label className="form-label">Temporary Password</label>
+                  <input className="form-input" type="password" required minLength={6} value={parentForm.password} onChange={e => setParentForm({...parentForm, password: e.target.value})} />
+                </div>
+                <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end', marginTop:'4px' }}>
+                  <button type="button" className="btn btn-secondary" onClick={() => setParentStudent(null)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={parentLoading}>
+                    {parentLoading ? 'Creating...' : 'Create and Link'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
