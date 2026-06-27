@@ -7,7 +7,8 @@ const ParentSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   phone: { type: String },
   password_hash: { type: String, required: true },
-  student_ids: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], // Linked children
+  student_ids: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }],
+  force_password_change: { type: Boolean, default: true }, // Prompt parent to change default password
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }

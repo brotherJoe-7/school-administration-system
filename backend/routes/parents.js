@@ -11,9 +11,9 @@ const { authenticate, authorize } = require('../middleware/auth');
 // POST /api/parents — Admin creates or links a parent to a student
 router.post('/', authenticate, authorize('admin'), async (req, res) => {
   try {
-    const { first_name, last_name, email, phone, password, student_id } = req.body;
-    if (!first_name || !last_name || !email || !password || !student_id) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
+    const { first_name, last_name, email, phone, student_id } = req.body;
+    if (!first_name || !last_name || !email || !student_id) {
+      return res.status(400).json({ success: false, message: 'Name, email, and student ID are required' });
     }
 
     const student = await Student.findById(student_id);
@@ -29,18 +29,27 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
       return res.json({ success: true, message: 'Existing parent linked to this student', data: parent });
     }
 
-    const password_hash = await bcrypt.hash(password, 10);
+    // Auto-generate default password from student's ID number
+    // e.g. student_number = "STU-001234" → default password is "STU-001234"
+    const defaultPassword = student.student_number;
+    const password_hash = await bcrypt.hash(defaultPassword, 10);
+
     parent = await Parent.create({
       first_name, last_name, email, phone,
       password_hash,
       tenant_id: student.tenant_id,
       student_ids: [student._id],
+      force_password_change: true,
     });
 
-    res.status(201).json({ success: true, message: 'Parent account created and linked', data: parent });
+    res.status(201).json({
+      success: true,
+      message: `Parent account created. Default password is the student ID: ${defaultPassword}`,
+      data: { ...parent.toObject(), default_password_hint: defaultPassword }
+    });
   } catch (err) {
     console.error(err);
-    if (err.code === 11000) return res.status(400).json({ success: false, message: 'Email already in use' });
+    if (err.code === 11000) return res.status(400).json({ success: false, message: 'A parent account with this email already exists' });
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

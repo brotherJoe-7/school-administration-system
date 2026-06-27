@@ -30,8 +30,9 @@ export default function StudentsPage() {
 
   // Parent linking
   const [parentStudent, setParentStudent] = useState(null);
-  const [parentForm, setParentForm] = useState({ first_name:'', last_name:'', email:'', phone:'', password:'' });
+  const [parentForm, setParentForm] = useState({ first_name:'', last_name:'', email:'', phone:'' });
   const [parentLoading, setParentLoading] = useState(false);
+  const [parentCreated, setParentCreated] = useState(null); // holds { email, password } after creation
 
   useEffect(() => {
     API.get('/classes/programs')
@@ -106,16 +107,17 @@ export default function StudentsPage() {
     e.preventDefault();
     setParentLoading(true);
     try {
-      await API.post('/parents', { ...parentForm, student_id: parentStudent.id });
-      toast.success(`Parent account created! Login: ${parentForm.email}`);
-      setParentStudent(null);
-      setParentForm({ first_name:'', last_name:'', email:'', phone:'', password:'' });
+      const { data } = await API.post('/parents', { ...parentForm, student_id: parentStudent.id });
+      setParentCreated({ email: parentForm.email, password: data.data?.default_password_hint || parentStudent.student_number });
+      setParentForm({ first_name:'', last_name:'', email:'', phone:'' });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create parent');
     } finally {
       setParentLoading(false);
     }
   };
+
+  const closeParentModal = () => { setParentStudent(null); setParentCreated(null); };
 
   return (
     <ProtectedLayout title="Students" allowedRoles={['admin','teacher']}>
@@ -323,46 +325,69 @@ export default function StudentsPage() {
 
       {/* Link Parent Modal */}
       {parentStudent && (
-        <div className="modal-overlay" onClick={() => setParentStudent(null)}>
+        <div className="modal-overlay" onClick={closeParentModal}>
           <div className="modal-box" style={{ maxWidth: '520px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Link Parent to {parentStudent.first_name} {parentStudent.last_name}</h3>
-              <button className="btn btn-secondary btn-sm" onClick={() => setParentStudent(null)}>x</button>
+              <button className="btn btn-secondary btn-sm" onClick={closeParentModal}>x</button>
             </div>
             <div className="modal-body">
-              <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-                Create a new parent account or enter an existing parent's email to link them to this student.
-              </p>
-              <form onSubmit={handleLinkParent} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
-                  <div className="form-group" style={{ marginBottom:0 }}>
-                    <label className="form-label">First Name</label>
-                    <input className="form-input" required value={parentForm.first_name} onChange={e => setParentForm({...parentForm, first_name: e.target.value})} />
+              {parentCreated ? (
+                /* ── Success State ── */
+                <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
+                  <div style={{ background:'rgba(16,185,129,0.1)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:'10px', padding:'16px' }}>
+                    <p style={{ fontWeight:700, color:'#10B981', marginBottom:'8px', fontSize:'14px' }}>Parent account created successfully</p>
+                    <p style={{ fontSize:'13px', color:'var(--color-text-secondary)', marginBottom:'4px' }}>Share these login credentials with the parent:</p>
+                    <p style={{ fontSize:'13px', margin:'8px 0 4px' }}>Email: <strong style={{ color:'var(--color-gold)' }}>{parentCreated.email}</strong></p>
+                    <p style={{ fontSize:'13px', margin:0 }}>Default Password: <strong style={{ color:'var(--color-gold)' }}>{parentCreated.password}</strong></p>
+                    <p style={{ fontSize:'11px', color:'var(--color-text-muted)', marginTop:'10px' }}>The parent will be prompted to change this password on first login.</p>
                   </div>
-                  <div className="form-group" style={{ marginBottom:0 }}>
-                    <label className="form-label">Last Name</label>
-                    <input className="form-input" required value={parentForm.last_name} onChange={e => setParentForm({...parentForm, last_name: e.target.value})} />
+                  <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end' }}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => { navigator.clipboard.writeText(`Email: ${parentCreated.email}\nPassword: ${parentCreated.password}`); toast.success('Credentials copied to clipboard'); }}
+                    >
+                      Copy Credentials
+                    </button>
+                    <button className="btn btn-primary" onClick={closeParentModal}>Done</button>
                   </div>
                 </div>
-                <div className="form-group" style={{ marginBottom:0 }}>
-                  <label className="form-label">Email Address</label>
-                  <input className="form-input" type="email" required value={parentForm.email} onChange={e => setParentForm({...parentForm, email: e.target.value})} />
-                </div>
-                <div className="form-group" style={{ marginBottom:0 }}>
-                  <label className="form-label">Phone (optional)</label>
-                  <input className="form-input" value={parentForm.phone} onChange={e => setParentForm({...parentForm, phone: e.target.value})} />
-                </div>
-                <div className="form-group" style={{ marginBottom:0 }}>
-                  <label className="form-label">Temporary Password</label>
-                  <input className="form-input" type="password" required minLength={6} value={parentForm.password} onChange={e => setParentForm({...parentForm, password: e.target.value})} />
-                </div>
-                <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end', marginTop:'4px' }}>
-                  <button type="button" className="btn btn-secondary" onClick={() => setParentStudent(null)}>Cancel</button>
-                  <button type="submit" className="btn btn-primary" disabled={parentLoading}>
-                    {parentLoading ? 'Creating...' : 'Create and Link'}
-                  </button>
-                </div>
-              </form>
+              ) : (
+                /* ── Form State ── */
+                <>
+                  <div style={{ background:'rgba(124,58,237,0.1)', border:'1px solid rgba(124,58,237,0.3)', borderRadius:'8px', padding:'12px 14px', marginBottom:'16px' }}>
+                    <p style={{ fontSize:'13px', color:'#a78bfa', margin:0 }}>
+                      The parent's default login password will be automatically set to the student's ID number (<strong>{parentStudent.student_number}</strong>). No manual password creation needed.
+                    </p>
+                  </div>
+                  <form onSubmit={handleLinkParent} style={{ display:'flex', flexDirection:'column', gap:'14px' }}>
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px' }}>
+                      <div className="form-group" style={{ marginBottom:0 }}>
+                        <label className="form-label">First Name</label>
+                        <input className="form-input" required value={parentForm.first_name} onChange={e => setParentForm({...parentForm, first_name: e.target.value})} />
+                      </div>
+                      <div className="form-group" style={{ marginBottom:0 }}>
+                        <label className="form-label">Last Name</label>
+                        <input className="form-input" required value={parentForm.last_name} onChange={e => setParentForm({...parentForm, last_name: e.target.value})} />
+                      </div>
+                    </div>
+                    <div className="form-group" style={{ marginBottom:0 }}>
+                      <label className="form-label">Email Address</label>
+                      <input className="form-input" type="email" required value={parentForm.email} onChange={e => setParentForm({...parentForm, email: e.target.value})} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom:0 }}>
+                      <label className="form-label">Phone (optional)</label>
+                      <input className="form-input" value={parentForm.phone} onChange={e => setParentForm({...parentForm, phone: e.target.value})} />
+                    </div>
+                    <div style={{ display:'flex', gap:'10px', justifyContent:'flex-end', marginTop:'4px' }}>
+                      <button type="button" className="btn btn-secondary" onClick={closeParentModal}>Cancel</button>
+                      <button type="submit" className="btn btn-primary" disabled={parentLoading}>
+                        {parentLoading ? 'Creating...' : 'Create and Link'}
+                      </button>
+                    </div>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         </div>
