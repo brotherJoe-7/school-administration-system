@@ -28,11 +28,14 @@ export default function StudentsPage() {
   const [paymentForm, setPaymentForm] = useState({ amount_paid:'', amount_due:'', payment_date:'', payment_method:'', reference:'', semester:'' });
   const [loadingPayments, setLoadingPayments] = useState(false);
 
-  // Parent linking
+  // Parent linking and viewing
   const [parentStudent, setParentStudent] = useState(null);
   const [parentForm, setParentForm] = useState({ first_name:'', last_name:'', email:'', phone:'' });
   const [parentLoading, setParentLoading] = useState(false);
-  const [parentCreated, setParentCreated] = useState(null); // holds { email, password } after creation
+  const [parentCreated, setParentCreated] = useState(null);
+
+  const [viewParents, setViewParents] = useState(null); // holds { student, parents: [] }
+  const [loadingViewParents, setLoadingViewParents] = useState(false);
 
   useEffect(() => {
     API.get('/classes/programs')
@@ -118,6 +121,20 @@ export default function StudentsPage() {
   };
 
   const closeParentModal = () => { setParentStudent(null); setParentCreated(null); };
+
+  const handleViewParent = async (student) => {
+    setLoadingViewParents(true);
+    setViewParents({ student, parents: [] });
+    try {
+      const { data } = await API.get(`/parents/student/${student.id}`);
+      setViewParents({ student, parents: data.data || [] });
+    } catch (err) {
+      toast.error('Failed to load parent information');
+      setViewParents(null);
+    } finally {
+      setLoadingViewParents(false);
+    }
+  };
 
   return (
     <ProtectedLayout title="Students" allowedRoles={['admin','teacher']}>
@@ -218,6 +235,7 @@ export default function StudentsPage() {
                           <>
                             <button className="btn btn-secondary btn-sm" onClick={() => openPayments(s)}>Payments</button>
                             <button className="btn btn-secondary btn-sm" style={{ color:'#7C3AED' }} onClick={() => setParentStudent(s)}>Link Parent</button>
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleViewParent(s)}>View Parent</button>
                             <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(s.id, s.status)}>
                               {s.status === 'suspended' ? 'Activate' : 'Suspend'}
                             </button>
@@ -387,6 +405,44 @@ export default function StudentsPage() {
                     </div>
                   </form>
                 </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Parent Modal */}
+      {viewParents && (
+        <div className="modal-overlay" onClick={() => setViewParents(null)}>
+          <div className="modal-box" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Parents for {viewParents.student.first_name} {viewParents.student.last_name}</h3>
+              <button className="btn btn-secondary btn-sm" onClick={() => setViewParents(null)}>x</button>
+            </div>
+            <div className="modal-body">
+              {loadingViewParents ? (
+                <div className="loading-center"><div className="spinner" /></div>
+              ) : viewParents.parents.length === 0 ? (
+                <div className="empty-state" style={{ padding: '24px 0' }}>
+                  <p>No parent linked to this student yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {viewParents.parents.map(parent => (
+                    <div key={parent._id} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '16px', background: 'var(--color-bg-primary)' }}>
+                      <h4 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>{parent.first_name} {parent.last_name}</h4>
+                      <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: 'var(--color-text-muted)' }}>Status: {parent.status}</p>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px', fontSize: '13px' }}>
+                        <div style={{ color: 'var(--color-text-muted)' }}>Email:</div>
+                        <div style={{ fontWeight: 500 }}>{parent.email}</div>
+                        
+                        <div style={{ color: 'var(--color-text-muted)' }}>Phone:</div>
+                        <div style={{ fontWeight: 500 }}>{parent.phone || '—'}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>

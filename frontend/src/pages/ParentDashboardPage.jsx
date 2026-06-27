@@ -49,23 +49,23 @@ export default function ParentDashboardPage() {
           <p>Please contact the school administration to link your children to this account.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
           {childrenData.map((child) => (
-            <div key={child.id} className="card" style={{ borderLeft: '4px solid var(--color-gold)' }}>
+            <div key={child.id} className="card" style={{ borderTop: '4px solid var(--color-gold)', display: 'flex', flexDirection: 'column' }}>
               <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>{child.name}</h2>
                   <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', margin: '2px 0 0 0' }}>Student ID: {child.student_number}</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Attendance Rate</div>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>Attendance</div>
                   <div style={{ fontSize: '20px', fontWeight: 800, color: child.attendanceRate > 85 ? '#10B981' : '#EF4444' }}>
                     {child.attendanceRate}%
                   </div>
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1 }}>
                 {/* Academic Profile */}
                 <div>
                   <h3 style={{ fontSize: '14px', fontWeight: 700, marginBottom: '12px' }}>Current Enrollments</h3>

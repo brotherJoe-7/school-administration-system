@@ -64,6 +64,16 @@ router.get('/', authenticate, authorize('admin'), async (req, res) => {
   }
 });
 
+// GET /api/parents/student/:studentId — Admin/Teacher view parent for a specific student
+router.get('/student/:studentId', authenticate, authorize('admin', 'teacher'), async (req, res) => {
+  try {
+    const parents = await Parent.find({ student_ids: req.params.studentId });
+    res.json({ success: true, data: parents });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // GET /api/parents/dashboard — Parent views their children's data
 router.get('/dashboard', authenticate, authorize('parent'), async (req, res) => {
   try {
