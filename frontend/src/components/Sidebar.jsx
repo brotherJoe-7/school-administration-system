@@ -36,6 +36,9 @@ const NAV_ITEMS = {
     { label: 'My Transcript', path: '/reports'    },
     { label: 'My Payments',   path: '/payments'   },
   ],
+  parent: [
+    { label: 'Parent Dashboard', path: '/parent-dashboard' },
+  ],
 };
 
 export default function Sidebar({ isOpen, onClose }) {

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 const Teacher = require('../models/Teacher');
 const Student = require('../models/Student');
+const Parent = require('../models/Parent');
 const AuditLog = require('../models/AuditLog');
 const { loginValidation, registerAdminValidation } = require('../middleware/validation');
 require('dotenv').config();
@@ -24,6 +25,10 @@ router.post('/login', loginValidation, async (req, res) => {
     if (!user) {
       user = await Student.findOne({ email });
       userRole = user ? 'student' : userRole;
+    }
+    if (!user) {
+      user = await Parent.findOne({ email });
+      userRole = user ? 'parent' : userRole;
     }
 
     if (!user) {
@@ -119,6 +124,8 @@ router.post('/forgot-password', async (req, res) => {
       user = await Teacher.findOne({ email });
     } else if (role === 'student') {
       user = await Student.findOne({ email });
+    } else if (role === 'parent') {
+      user = await Parent.findOne({ email });
     }
 
     if (!user) {

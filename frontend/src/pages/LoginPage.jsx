@@ -17,6 +17,8 @@ export default function LoginPage() {
     if (!authLoading && user) {
       if (user.role === 'superadmin') {
         navigate('/platform');
+      } else if (user.role === 'parent') {
+        navigate('/parent-dashboard');
       } else {
         navigate('/dashboard');
       }
@@ -48,6 +50,8 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${user.name.split(' ')[0]}!`);
       if (user.role === 'superadmin') {
         navigate('/platform');
+      } else if (user.role === 'parent') {
+        navigate('/parent-dashboard');
       } else {
         navigate('/dashboard');
       }
@@ -139,6 +143,7 @@ export default function LoginPage() {
               <select className="form-select" value={role} onChange={(e) => setRole(e.target.value)}>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
+                <option value="parent">Parent</option>
                 <option value="admin">Administrator</option>
               </select>
             </div>

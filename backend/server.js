@@ -172,6 +172,7 @@ app.use('/api/audit',     require('./routes/audit'));
 app.use('/api/classes',   require('./routes/classes'));
 app.use('/api/payments',  require('./routes/payments'));
 app.use('/api/ai',        require('./routes/ai'));
+app.use('/api/parents',   require('./routes/parents'));
 app.use('/api/public',    require('./routes/public'));
 app.use('/api/platform',  require('./routes/platform'));
 app.use('/api/settings',  require('./routes/settings'));

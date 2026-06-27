@@ -24,6 +24,8 @@ import PlatformDashboardPage  from './pages/PlatformDashboardPage';
 import AiAssistantPage        from './pages/AiAssistantPage';
 import { PrivacyPage, TermsPage, GDPRPage, PricingPage, ContactPage } from './pages/PublicPages';
 
+import ParentDashboardPage    from './pages/ParentDashboardPage';
+
 function App() {
   React.useEffect(() => {
     const savedColor = localStorage.getItem('tenantColor');
@@ -77,6 +79,7 @@ function App() {
           <Route path="/gdpr"    element={<GDPRPage />} />
 
           <Route path="/dashboard"  element={<DashboardPage />} />
+          <Route path="/parent-dashboard" element={<ParentDashboardPage />} />
           <Route path="/students"   element={<StudentsPage />} />
           <Route path="/teachers"   element={<TeachersPage />} />
           <Route path="/classes"    element={<ClassesPage />} />
