@@ -29,15 +29,18 @@ const NAV_ITEMS = {
     { label: 'Attendance',   path: '/attendance' },
     { label: 'Enter Grades', path: '/reports'    },
     { label: 'My Payslips',  path: '/payroll'    },
+    { label: 'AI Assistant', path: '/ai'         },
   ],
   student: [
     { label: 'Dashboard',     path: '/dashboard'  },
     { label: 'My Attendance', path: '/attendance' },
     { label: 'My Transcript', path: '/reports'    },
     { label: 'My Payments',   path: '/payments'   },
+    { label: 'AI Assistant',  path: '/ai'         },
   ],
   parent: [
     { label: 'Parent Dashboard', path: '/parent-dashboard' },
+    { label: 'AI Assistant',     path: '/ai'               },
   ],
 };
 
