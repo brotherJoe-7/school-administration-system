@@ -5,36 +5,36 @@ import toast from 'react-hot-toast';
 
 const NAV_ITEMS = {
   admin: [
-    { label: 'Dashboard',      path: '/dashboard',  icon: '◈' },
-    { label: 'Students',       path: '/students',   icon: '◉' },
-    { label: 'Teachers',       path: '/teachers',   icon: '◎' },
-    { label: 'Classes',        path: '/classes',    icon: '▦' },
-    { label: 'Attendance',     path: '/attendance', icon: '◷' },
-    { label: 'Reports & GPA',  path: '/reports',    icon: '▤' },
-    { label: 'Payroll',        path: '/payroll',    icon: '◈' },
-    { label: 'Approval Queue', path: '/approvals',  icon: '◈' },
-    { label: 'Audit Log',      path: '/audit',      icon: '▦' },
-    { label: 'AI Assistant',   path: '/ai',         icon: '◈' },
-    { label: 'Settings',       path: '/settings',   icon: '◎' },
+    { label: 'Dashboard',      path: '/dashboard'  },
+    { label: 'Students',       path: '/students'   },
+    { label: 'Teachers',       path: '/teachers'   },
+    { label: 'Classes',        path: '/classes'    },
+    { label: 'Attendance',     path: '/attendance' },
+    { label: 'Reports & GPA',  path: '/reports'    },
+    { label: 'Payroll',        path: '/payroll'    },
+    { label: 'Approval Queue', path: '/approvals'  },
+    { label: 'Audit Log',      path: '/audit'      },
+    { label: 'AI Assistant',   path: '/ai'         },
+    { label: 'Settings',       path: '/settings'   },
   ],
   superadmin: [
-    { label: 'Platform Overview', path: '/platform', icon: '◈' },
-    { label: 'AI Assistant',      path: '/ai',       icon: '◈' },
-    { label: 'System Audit',      path: '/audit',    icon: '▦' },
-    { label: 'Settings',          path: '/settings', icon: '◎' },
+    { label: 'Platform Overview', path: '/platform' },
+    { label: 'AI Assistant',      path: '/ai'       },
+    { label: 'System Audit',      path: '/audit'    },
+    { label: 'Settings',          path: '/settings' },
   ],
   teacher: [
-    { label: 'Dashboard',    path: '/dashboard',  icon: '◈' },
-    { label: 'My Classes',   path: '/classes',    icon: '▦' },
-    { label: 'Attendance',   path: '/attendance', icon: '◷' },
-    { label: 'Enter Grades', path: '/reports',    icon: '▤' },
-    { label: 'My Payslips',  path: '/payroll',    icon: '◈' },
+    { label: 'Dashboard',    path: '/dashboard'  },
+    { label: 'My Classes',   path: '/classes'    },
+    { label: 'Attendance',   path: '/attendance' },
+    { label: 'Enter Grades', path: '/reports'    },
+    { label: 'My Payslips',  path: '/payroll'    },
   ],
   student: [
-    { label: 'Dashboard',     path: '/dashboard',  icon: '◈' },
-    { label: 'My Attendance', path: '/attendance', icon: '◷' },
-    { label: 'My Transcript', path: '/reports',    icon: '▤' },
-    { label: 'My Payments',   path: '/payments',   icon: '◈' },
+    { label: 'Dashboard',     path: '/dashboard'  },
+    { label: 'My Attendance', path: '/attendance' },
+    { label: 'My Transcript', path: '/reports'    },
+    { label: 'My Payments',   path: '/payments'   },
   ],
 };
 
@@ -56,7 +56,14 @@ export default function Sidebar({ isOpen, onClose }) {
   };
 
   return (
-    <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}>
+    <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100dvh',
+        overflow: 'hidden',
+      }}
+    >
 
       {/* ── Logo ── */}
       <div className="sidebar-logo" style={{ flexShrink: 0 }}>
@@ -67,9 +74,9 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
       </div>
 
-      {/* ── Scrollable nav area ── */}
-      <nav className="sidebar-nav">
-        <div className="nav-section-label">Navigation</div>
+      {/* ── Scrollable nav ── */}
+      <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 10px' }}>
+        <div className="nav-section-label" style={{ padding: '8px 8px 6px' }}>Navigation</div>
         {navItems.map((item) => (
           <NavLink
             key={item.path + item.label}
@@ -80,56 +87,65 @@ export default function Sidebar({ isOpen, onClose }) {
             {item.label}
           </NavLink>
         ))}
+      </nav>
 
-        {/* Divider */}
-        <div style={{ height: '1px', background: 'var(--color-border)', margin: '16px 0 12px' }} />
+      {/* ── Pinned Footer ── always visible, never clipped ── */}
+      <div style={{
+        flexShrink: 0,
+        borderTop: '1px solid var(--color-border)',
+        background: 'var(--color-bg-secondary)',
+        padding: '10px 10px 14px',
+      }}>
 
-        {/* View Website */}
-        <a
-          href="/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="nav-item"
-          style={{ textDecoration: 'none', marginBottom: '4px' }}
-        >
-          View Website
-        </a>
-
-        {/* Sign Out */}
-        <button
-          onClick={handleLogout}
-          className="nav-item"
-          style={{
-            border: 'none', background: 'rgba(239,68,68,0.1)',
-            color: 'var(--color-danger)', cursor: 'pointer',
-            fontFamily: 'inherit', width: '100%', textAlign: 'left',
-          }}
-        >
-          Sign Out
-        </button>
-
-        {/* ── User info ── */}
+        {/* User pill */}
         <div style={{
-          display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '10px 12px', marginTop: '12px',
-          borderRadius: 'var(--radius-md)', background: 'var(--color-bg-hover)',
+          display: 'flex', alignItems: 'center', gap: '8px',
+          padding: '8px 10px', borderRadius: 'var(--radius-md)',
+          background: 'var(--color-bg-hover)', marginBottom: '8px',
         }}>
-          <div className="user-avatar" style={{ width: 32, height: 32, fontSize: '12px', flexShrink: 0 }}>
+          <div className="user-avatar" style={{ width: 30, height: 30, fontSize: '11px', flexShrink: 0 }}>
             {initials}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-primary)' }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {user.name}
             </div>
-            <div style={{ fontSize: '10px', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '9px', color: 'var(--color-gold)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
               {user.role === 'superadmin' ? 'Super Admin' : user.role}
             </div>
           </div>
         </div>
 
-        {/* Bottom padding for mobile browser chrome */}
-        <div style={{ height: '24px' }} />
-      </nav>
+        {/* Action buttons row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '7px 4px', borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--color-border)', color: 'var(--color-text-secondary)',
+              fontSize: '11px', fontWeight: 500, textDecoration: 'none',
+              textAlign: 'center', background: 'transparent',
+            }}
+          >
+            View Website
+          </a>
+          <button
+            onClick={handleLogout}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '7px 4px', borderRadius: 'var(--radius-md)',
+              border: '1px solid rgba(239,68,68,0.4)', color: 'var(--color-danger)',
+              fontSize: '11px', fontWeight: 600, background: 'rgba(239,68,68,0.1)',
+              cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
 
     </aside>
   );

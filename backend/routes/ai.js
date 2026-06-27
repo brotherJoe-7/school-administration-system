@@ -66,4 +66,73 @@ Use this context data to answer if relevant: ${JSON.stringify(contextData || {})
   }
 });
 
+// GET /api/ai/report - Auto-generated daily/weekly intelligence report
+router.get('/report', authenticate, tenantMiddleware, async (req, res) => {
+  try {
+    const period = req.query.period || 'daily'; // 'daily' or 'weekly'
+    const daysBack = period === 'weekly' ? 7 : 1;
+    const since = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
+
+    // Gather data in parallel from multiple collections
+    const AuditLog = require('../models/AuditLog');
+    const Admin = require('../models/Admin');
+    const Teacher = require('../models/Teacher');
+    const Student = require('../models/Student');
+
+    const auditFilter = { timestamp: { $gte: since } };
+    if (req.user.role !== 'superadmin' && req.tenant_id && require('mongoose').Types.ObjectId.isValid(req.tenant_id)) {
+      auditFilter.tenant_id = req.tenant_id;
+    }
+
+    const [recentLogs, totalStudents, totalTeachers] = await Promise.allSettled([
+      AuditLog.find(auditFilter).sort({ timestamp: -1 }).limit(50).lean(),
+      Student.countDocuments(),
+      Teacher.countDocuments(),
+    ]);
+
+    const logs = recentLogs.status === 'fulfilled' ? recentLogs.value : [];
+    const students = totalStudents.status === 'fulfilled' ? totalStudents.value : 0;
+    const teachers = totalTeachers.status === 'fulfilled' ? totalTeachers.value : 0;
+
+    // Summarise actions for Gemini context
+    const actionSummary = logs.reduce((acc, log) => {
+      acc[log.action] = (acc[log.action] || 0) + 1;
+      return acc;
+    }, {});
+
+    const contextSummary = {
+      report_period: period,
+      period_hours: daysBack * 24,
+      total_actions: logs.length,
+      action_breakdown: actionSummary,
+      total_students: students,
+      total_teachers: teachers,
+      generated_at: new Date().toISOString(),
+    };
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_API_KEY_HERE' || apiKey === 'PASTE_YOUR_REAL_GEMINI_API_KEY_HERE') {
+      const fallback = `${period === 'weekly' ? 'Weekly' : 'Daily'} Report Summary: The system recorded ${logs.length} activity events in the past ${daysBack * 24} hours across ${students} students and ${teachers} teachers. Top actions: ${Object.entries(actionSummary).map(([k,v]) => `${k}: ${v}`).join(', ') || 'No activity recorded'}. (Connect Gemini API key for AI-powered analysis.)`;
+      return res.json({ success: true, data: { report: fallback, period, context: contextSummary } });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    const prompt = `You are an intelligent school administration analytics AI. Based on the following ${period} system activity data, generate a professional, structured intelligence report in 4-6 sentences. 
+Highlight: key activity patterns, any concerns (low logins, spikes in deletions, etc), positive trends, and one actionable recommendation.
+Be direct and data-driven. Do NOT use markdown headers or bullet points — write in flowing professional prose.
+
+Data: ${JSON.stringify(contextSummary)}`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+
+    res.json({ success: true, data: { report: text, period, context: contextSummary } });
+  } catch (error) {
+    console.error('AI Report Error:', error);
+    res.status(200).json({ success: false, message: `Report generation failed: ${error.message}` });
+  }
+});
+
 module.exports = router;

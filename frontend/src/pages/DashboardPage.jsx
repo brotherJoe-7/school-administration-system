@@ -60,6 +60,9 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState([]);
   const [aiOverview, setAiOverview] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiReport, setAiReport] = useState('');
+  const [aiReportLoading, setAiReportLoading] = useState(false);
+  const [reportPeriod, setReportPeriod] = useState('daily');
 
   // Filters state
   const [program, setProgram] = useState('');
@@ -181,6 +184,24 @@ export default function DashboardPage() {
       fetchAiOverview(stats);
     }
   }, [stats]);
+
+  // Auto-fetch AI intelligence report on mount
+  const fetchAiReport = async (period = 'daily') => {
+    setAiReportLoading(true);
+    try {
+      const { data } = await API.get(`/ai/report?period=${period}`);
+      if (data.success) {
+        setAiReport(data.data.report);
+      } else {
+        setAiReport(`Unable to generate report: ${data.message}`);
+      }
+    } catch { setAiReport(''); }
+    setAiReportLoading(false);
+  };
+
+  useEffect(() => {
+    if (user?.role) fetchAiReport(reportPeriod);
+  }, [user, reportPeriod]);
 
   const formatLeones = (v) => `Le ${(v / 1000000).toFixed(1)}M`;
 
@@ -527,6 +548,61 @@ export default function DashboardPage() {
                   ↻ Refresh Overview
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ── AI Intelligence Report (auto-generated daily/weekly) ── */}
+          {user && (
+            <div className="card mb-20" style={{ borderLeft: '4px solid #7C3AED', background: 'var(--color-bg-card)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>AI Intelligence Report</h3>
+                  <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', margin: '2px 0 0 0' }}>
+                    Auto-analysed by Gemini · No prompt needed
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', overflow: 'hidden' }}>
+                    {['daily', 'weekly'].map(p => (
+                      <button
+                        key={p}
+                        onClick={() => setReportPeriod(p)}
+                        style={{
+                          padding: '4px 12px', fontSize: '11px', fontWeight: 600,
+                          background: reportPeriod === p ? '#7C3AED' : 'transparent',
+                          color: reportPeriod === p ? '#fff' : 'var(--color-text-muted)',
+                          border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    onClick={() => fetchAiReport(reportPeriod)}
+                    disabled={aiReportLoading}
+                  >
+                    ↻
+                  </button>
+                </div>
+              </div>
+              {aiReportLoading ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--color-text-muted)', fontSize: '13px', padding: '8px 0' }}>
+                  <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                  Gemini is reading your {reportPeriod} activity data...
+                </div>
+              ) : aiReport ? (
+                <p style={{ fontSize: '14px', lineHeight: 1.75, color: 'var(--color-text-secondary)', margin: 0 }}>
+                  {aiReport}
+                </p>
+              ) : (
+                <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: 0 }}>
+                  Report unavailable. Ensure the Gemini API key is configured in production.
+                </p>
+              )}
             </div>
           )}
 
