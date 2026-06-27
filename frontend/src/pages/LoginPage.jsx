@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
@@ -10,8 +10,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (user.role === 'superadmin') {
+        navigate('/platform');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, authLoading, navigate]);
 
   const [forgotMode, setForgotMode] = useState(false);
   const [role, setRole] = useState('student');

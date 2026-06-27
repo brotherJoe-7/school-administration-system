@@ -258,8 +258,14 @@ export default function LandingPage() {
 
           {/* Far right actions */}
           <div style={s.navRight} className="landing-nav-links">
-            <Link to="/login" style={s.navLogin}>Login</Link>
-            <Link to="/create-school" style={s.navCta}>Get Started</Link>
+            {localStorage.getItem('token') ? (
+              <Link to="/dashboard" style={s.navCta}>Dashboard</Link>
+            ) : (
+              <>
+                <Link to="/login" style={s.navLogin}>Login</Link>
+                <Link to="/create-school" style={s.navCta}>Get Started</Link>
+              </>
+            )}
           </div>
 
           {/* Hamburger — mobile only via CSS */}
@@ -276,8 +282,14 @@ export default function LandingPage() {
             <a href="#programs" style={{ fontSize: 16, color: '#ccc', textDecoration: 'none' }} onClick={() => setMenuOpen(false)}>Programs</a>
             <Link to="/pricing" style={{ fontSize: 16, color: '#ccc', textDecoration: 'none' }} onClick={() => setMenuOpen(false)}>Pricing</Link>
             <Link to="/contact" style={{ fontSize: 16, color: '#ccc', textDecoration: 'none' }} onClick={() => setMenuOpen(false)}>Contact Us</Link>
-            <Link to="/login" style={{ fontSize: 16, color: '#ccc', textDecoration: 'none' }} onClick={() => setMenuOpen(false)}>Login</Link>
-            <Link to="/create-school" style={{ ...s.navCta, textAlign: 'center', display: 'block' }} onClick={() => setMenuOpen(false)}>Get Started</Link>
+            {localStorage.getItem('token') ? (
+              <Link to="/dashboard" style={{ ...s.navCta, textAlign: 'center', display: 'block' }} onClick={() => setMenuOpen(false)}>Go to Dashboard</Link>
+            ) : (
+              <>
+                <Link to="/login" style={{ fontSize: 16, color: '#ccc', textDecoration: 'none' }} onClick={() => setMenuOpen(false)}>Login</Link>
+                <Link to="/create-school" style={{ ...s.navCta, textAlign: 'center', display: 'block' }} onClick={() => setMenuOpen(false)}>Get Started</Link>
+              </>
+            )}
         </div>
       </nav>
 
