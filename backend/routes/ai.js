@@ -71,7 +71,12 @@ Use this context data to answer if relevant: ${JSON.stringify(contextData || {})
     res.json({ success: true, data: { answer: text } });
   } catch (error) {
     console.error("Gemini Error:", error);
-    // Return 200 so axios doesn't throw. We want the frontend to see the exact API key error!
+    // Check for rate limit error (429)
+    if (error.message && error.message.includes('429')) {
+      const retryMatch = error.message.match(/(\d+)s/);
+      const seconds = retryMatch ? retryMatch[1] : '60';
+      return res.status(200).json({ success: false, message: `⏳ You've reached the free AI quota limit (20 requests/day for gemini-2.5-flash). Please retry in ${seconds} seconds, or upgrade your Gemini API plan at ai.google.dev.` });
+    }
     res.status(200).json({ success: false, message: `Gemini API Error: ${error.message}` });
   }
 });

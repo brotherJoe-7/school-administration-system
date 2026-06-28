@@ -178,12 +178,7 @@ export default function DashboardPage() {
     loadData();
   }, [user, program, faculty, startDate, endDate]);
 
-  // Auto-fetch AI overview whenever stats change
-  useEffect(() => {
-    if (stats && user?.role) {
-      fetchAiOverview(stats);
-    }
-  }, [stats]);
+  // AI overview is NOT auto-loaded — user must click "Generate" to save quota
 
   // Auto-fetch AI intelligence report on mount
   const fetchAiReport = async (period = 'daily') => {
@@ -199,9 +194,7 @@ export default function DashboardPage() {
     setAiReportLoading(false);
   };
 
-  useEffect(() => {
-    if (user?.role) fetchAiReport(reportPeriod);
-  }, [user, reportPeriod]);
+  // AI report is NOT auto-loaded — user must click ↻ to save quota
 
   const formatLeones = (v) => `Le ${(v / 1000000).toFixed(1)}M`;
 
@@ -344,7 +337,7 @@ export default function DashboardPage() {
             </p>
           ) : (
             <p style={{ fontSize: '13px', color: 'var(--color-text-muted)', margin: 0 }}>
-              AI overview unavailable. Add your GEMINI_API_KEY in the backend .env to enable this.
+              Click <strong>Generate Overview</strong> to get an AI summary of your current dashboard data.
             </p>
           )}
           <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
@@ -352,9 +345,9 @@ export default function DashboardPage() {
               className="btn btn-secondary btn-sm"
               style={{ fontSize: '12px', padding: '5px 14px' }}
               onClick={() => fetchAiOverview(stats)}
-              disabled={aiLoading}
+              disabled={aiLoading || !stats}
             >
-              ↻ Refresh Overview
+              ✦ {aiOverview ? '↻ Refresh' : 'Generate Overview'}
             </button>
           </div>
         </div>
