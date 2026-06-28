@@ -159,7 +159,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }'
 }));
 
+const auditLogger = require('./middleware/auditLogger');
+
 // Routes
+app.use(auditLogger);
 app.use('/api/auth',      authLimiter, require('./routes/auth'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/students',  require('./routes/students'));
