@@ -56,7 +56,8 @@ router.post('/query', authenticate, async (req, res) => {
 
     // Call Real Gemini API
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const model = genAI.getGenerativeModel({ model: modelName });
     
     const prompt = `You are an AI Assistant for a School Administration Platform. You are talking to a ${roleLabel} of a ${contextType || 'school'}. 
 Please answer the following query in a helpful, concise, professional tone relevant to their role. 
@@ -126,7 +127,8 @@ router.get('/report', authenticate, tenantMiddleware, async (req, res) => {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+    const model = genAI.getGenerativeModel({ model: modelName });
 
     const prompt = `You are an intelligent school administration analytics AI. Based on the following ${period} system activity data, generate a professional, structured intelligence report in 4-6 sentences. 
 Highlight: key activity patterns, any concerns (low logins, spikes in deletions, etc), positive trends, and one actionable recommendation.
