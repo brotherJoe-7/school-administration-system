@@ -126,6 +126,9 @@ export default function AiAssistantPage() {
       setMessages(prev => [...prev, { role: 'ai', content: 'Connection error while reaching the AI service. Please check that the Gemini API key is configured.' }]);
     } finally {
       setLoading(false);
+    }
+  }, [input, loading, config, user]);
+
   if (isMobile) {
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: 'var(--color-bg-primary)', display: 'flex', flexDirection: 'column', height: '100dvh' }}>
