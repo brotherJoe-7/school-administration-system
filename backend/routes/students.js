@@ -157,6 +157,17 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
       status: 'approved'
     });
 
+    const AuditLog = require('../models/AuditLog');
+    AuditLog.create({
+      tenant_id: req.tenant_id || null,
+      user_id: req.user.id,
+      user_role: req.user.role,
+      action: 'CREATE_STUDENT',
+      entity_type: 'Student',
+      entity_id: student._id,
+      notes: `Registered new student ${first_name} ${last_name} (${student_number})`
+    }).catch(() => {});
+
     res.status(201).json({
       success: true,
       message: 'Student created successfully. They can now use the Setup Link to claim their account.',
@@ -208,17 +219,36 @@ router.put('/complete-setup', authenticate, async (req, res) => {
 // PUT /api/students/:id (admin update)
 router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
   const { first_name, last_name, email, phone, address, status } = req.body;
+  const AuditLog = require('../models/AuditLog');
   try {
-    await Student.findByIdAndUpdate(req.params.id, {
-      first_name,
-      last_name,
-      email,
-      phone,
-      address,
-      status
-    });
+    // Fetch the current record first so we can write a clean audit note
+    const existing = await Student.findById(req.params.id).select('first_name last_name student_number');
+    if (!existing) return res.status(404).json({ success: false, message: 'Student not found' });
+
+    const updateFields = {};
+    if (first_name !== undefined) updateFields.first_name = first_name;
+    if (last_name  !== undefined) updateFields.last_name  = last_name;
+    if (email      !== undefined) updateFields.email      = email;
+    if (phone      !== undefined) updateFields.phone      = phone;
+    if (address    !== undefined) updateFields.address    = address;
+    if (status     !== undefined) updateFields.status     = status;
+
+    await Student.findByIdAndUpdate(req.params.id, updateFields);
+
+    const fullName = `${first_name || existing.first_name} ${last_name || existing.last_name}`;
+    AuditLog.create({
+      tenant_id: req.tenant_id || null,
+      user_id: req.user.id,
+      user_role: req.user.role,
+      action: 'UPDATE_STUDENT',
+      entity_type: 'Student',
+      entity_id: req.params.id,
+      notes: `Updated student details for ${fullName} (${existing.student_number})`
+    }).catch(() => {});
+
     res.json({ success: true, message: 'Student updated' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Update failed' });
   }
 });
