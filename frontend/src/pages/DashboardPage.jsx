@@ -119,7 +119,7 @@ export default function DashboardPage() {
       setAttendance(get(6, 'data.data', []));
       setTuition(get(7, 'data.data', []));
 
-      if (user?.role === 'admin' || user?.role === 'teacher') {
+      if (user?.role === 'admin' || user?.role === 'superadmin') {
         try {
           const p = await API.get(`/dashboard/payroll-summary?${params}`);
           setPayroll(p.data.data || []);
@@ -298,7 +298,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flexShrink: 0, marginTop: '8px' }}>
-          {(user?.role === 'admin' || user?.role === 'teacher') && (
+          {(user?.role === 'admin' || user?.role === 'superadmin') && (
             <button
               className="btn btn-primary"
               style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
@@ -361,7 +361,7 @@ export default function DashboardPage() {
       )}
 
       {/* ── AI Intelligence Report (auto-generated daily/weekly) ── */}
-      {user && (
+      {(user?.role === 'admin' || user?.role === 'superadmin') && (
         <div className="card mb-20" style={{ borderLeft: '4px solid #7C3AED', background: 'var(--color-bg-card)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
             <div>
@@ -416,6 +416,7 @@ export default function DashboardPage() {
       )}
 
       {/* Interactive Filters row */}
+      {(user?.role === 'admin' || user?.role === 'superadmin') && (
       <div className="card mb-20" style={{ padding: '16px 20px', borderLeft: '4px solid #000000' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', alignItems: 'end' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
@@ -452,6 +453,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      )}
 
       {loading ? (
         <div className="loading-center"><div className="spinner" /></div>
@@ -577,8 +579,8 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Payroll Chart (admin and teacher) */}
-          {(user?.role === 'admin' || user?.role === 'teacher') && (
+          {/* Payroll Chart (admin only) */}
+          {(user?.role === 'admin' || user?.role === 'superadmin') && (
             <div className="card mb-20">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
                 <div>
@@ -608,6 +610,7 @@ export default function DashboardPage() {
 
 
           {/* ── Activity Log Widget ── */}
+          {(user?.role === 'admin' || user?.role === 'superadmin') && (
           <div className="card mb-20">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
@@ -679,6 +682,7 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+          )}
 
           {/* Quick Actions Row */}
           <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' }}>
