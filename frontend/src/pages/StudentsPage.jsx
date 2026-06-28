@@ -37,6 +37,15 @@ export default function StudentsPage() {
   const [viewParents, setViewParents] = useState(null); // holds { student, parents: [] }
   const [loadingViewParents, setLoadingViewParents] = useState(false);
 
+  const [openMenuId, setOpenMenuId] = useState(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleWindowClick = () => setOpenMenuId(null);
+    if (openMenuId) window.addEventListener('click', handleWindowClick);
+    return () => window.removeEventListener('click', handleWindowClick);
+  }, [openMenuId]);
+
   useEffect(() => {
     API.get('/classes/programs')
       .then(res => setProgramsList(res.data.data || []))
@@ -229,20 +238,35 @@ export default function StudentsPage() {
                       {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
                     </td>
                     <td>
-                      <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
-                        <Link to={`/reports/transcript/${s.id}`} className="btn btn-secondary btn-sm">Transcript</Link>
-                        {user?.role === 'admin' && (
-                          <>
-                            <button className="btn btn-secondary btn-sm" onClick={() => openPayments(s)}>Payments</button>
-                            <button className="btn btn-secondary btn-sm" style={{ color:'#7C3AED' }} onClick={() => setParentStudent(s)}>Link Parent</button>
-                            <button className="btn btn-secondary btn-sm" onClick={() => handleViewParent(s)}>View Parent</button>
-                            <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(s.id, s.status)}>
-                              {s.status === 'suspended' ? 'Activate' : 'Suspend'}
-                            </button>
-                            <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(s.id)}>
-                              Delete
-                            </button>
-                          </>
+                      <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setOpenMenuId(openMenuId === s.id ? null : s.id)}
+                          style={{ padding: '6px 12px', minWidth: '80px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
+                        >
+                          Actions
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        
+                        {openMenuId === s.id && (
+                          <div style={{
+                            position: 'absolute', right: 0, top: '100%', marginTop: '4px',
+                            background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)',
+                            borderRadius: '8px', padding: '6px', minWidth: '160px', zIndex: 50,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', gap: '2px'
+                          }}>
+                            <Link to={`/reports/transcript/${s.id}`} style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--color-text-primary)', textDecoration: 'none', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => setOpenMenuId(null)}>Transcript</Link>
+                            {user?.role === 'admin' && (
+                              <>
+                                <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-text-primary)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); openPayments(s); }}>Payments</button>
+                                <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: '#a78bfa', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); setParentStudent(s); }}>Link Parent</button>
+                                <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-text-primary)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); handleViewParent(s); }}>View Parent</button>
+                                <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+                                <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-warning)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); handleSuspend(s.id, s.status); }}>{s.status === 'suspended' ? 'Activate' : 'Suspend'}</button>
+                                <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); handleDelete(s.id); }}>Delete</button>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>
