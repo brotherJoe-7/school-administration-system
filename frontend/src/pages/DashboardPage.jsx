@@ -415,8 +415,8 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Interactive Filters row */}
-      {(user?.role === 'admin' || user?.role === 'superadmin') && (
+      {/* Interactive Filters row (admin only) */}
+      {(user?.role === 'admin') && (
       <div className="card mb-20" style={{ padding: '16px 20px', borderLeft: '4px solid #000000' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', alignItems: 'end' }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
@@ -471,6 +471,13 @@ export default function DashboardPage() {
                 <StatCard label="Pending Approvals" value={stats?.pending_registrations != null ? stats.pending_registrations                : null} accent="#000000" sub="Awaiting review"     onClick={() => navigate('/approvals')} />
               </>
             )}
+            {(user?.role === 'superadmin') && (
+              <>
+                <StatCard label="Total Schools"   value="1" accent="#000000" sub="Active Tenants" />
+                <StatCard label="Global Students" value={stats?.total_students != null ? stats.total_students.toLocaleString() : null} accent="#000000" sub="Across all schools" />
+                <StatCard label="Global Teachers" value={stats?.total_teachers != null ? stats.total_teachers.toLocaleString() : null} accent="#000000" sub="Across all schools" />
+              </>
+            )}
             {user?.role === 'teacher' && (
               <>
                 <StatCard label="Teachers"        value={stats?.total_teachers != null ? stats.total_teachers.toLocaleString() : null} accent="#000000" sub="Active staff"         onClick={() => navigate('/teachers')} />
@@ -487,6 +494,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Real-time Attendance Summary Widget */}
+          {user?.role !== 'superadmin' && (
           <div className="card mb-28" style={{ borderLeft: '4px solid #000000' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '6px' }}>Real-time Attendance Summary</h3>
             <p style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>Computed live from class attendance sheets</p>
@@ -505,8 +513,10 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+          )}
 
           {/* Charts Row 1 */}
+          {user?.role !== 'superadmin' && (
           <div className="charts-grid mb-20">
             {/* Attendance Trend */}
             <div className="card">
@@ -578,9 +588,10 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+          )}
 
           {/* Payroll Chart (admin only) */}
-          {(user?.role === 'admin' || user?.role === 'superadmin') && (
+          {(user?.role === 'admin') && (
             <div className="card mb-20">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '16px' }}>
                 <div>
@@ -705,9 +716,46 @@ export default function DashboardPage() {
               </a>
             ))}
 
+            {user?.role === 'superadmin' && [
+              { href: '/superadmin/schools', label: 'Manage Schools', color: '#7C3AED' },
+              { href: '/audit', label: 'Platform Audit Log', color: '#7C3AED' },
+              { href: '/ai', label: 'AI Assistant', color: '#7C3AED' },
+            ].map(q => (
+              <a key={q.href} onClick={() => navigate(q.href)} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)', padding: '16px',
+                transition: 'all 0.15s', cursor: 'pointer',
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = q.color}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+              >
+                <span style={{ fontSize: '13px', fontWeight: 600 }}>{q.label}</span>
+              </a>
+            ))}
+
+            {user?.role === 'teacher' && [
+              { href: '/attendance', label: 'Mark Attendance', color: '#000000' },
+              { href: '/classes', label: 'My Classes', color: '#000000' },
+              { href: '/ai', label: 'AI Assistant', color: '#000000' },
+            ].map(q => (
+              <a key={q.href} onClick={() => navigate(q.href)} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)', padding: '16px',
+                transition: 'all 0.15s', cursor: 'pointer',
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = q.color}
+              onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+              >
+                <span style={{ fontSize: '13px', fontWeight: 600 }}>{q.label}</span>
+              </a>
+            ))}
+
             {user?.role === 'student' && [
               { href: '/reports', label: 'My Report Card & Transcript', color: '#000000' },
               { href: '/attendance', label: 'View My Attendance', color: '#000000' },
+              { href: '/ai', label: 'AI Assistant', color: '#000000' },
             ].map(q => (
               <a key={q.href} onClick={() => navigate(q.href)} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
