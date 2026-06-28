@@ -238,7 +238,26 @@ export default function StudentsPage() {
                       {s.created_at ? new Date(s.created_at).toLocaleDateString() : '—'}
                     </td>
                     <td>
-                      <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+                      {/* Desktop View: Horizontal Buttons */}
+                      <div className="desktop-only" style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+                        <Link to={`/reports/transcript/${s.id}`} className="btn btn-secondary btn-sm">Transcript</Link>
+                        {user?.role === 'admin' && (
+                          <>
+                            <button className="btn btn-secondary btn-sm" onClick={() => openPayments(s)}>Payments</button>
+                            <button className="btn btn-secondary btn-sm" style={{ color:'#7C3AED' }} onClick={() => setParentStudent(s)}>Link Parent</button>
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleViewParent(s)}>View Parent</button>
+                            <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(s.id, s.status)}>
+                              {s.status === 'suspended' ? 'Activate' : 'Suspend'}
+                            </button>
+                            <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(s.id)}>
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Mobile View: Dropdown Menu */}
+                      <div className="mobile-only" style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
                         <button
                           className="btn btn-secondary btn-sm"
                           onClick={() => setOpenMenuId(openMenuId === s.id ? null : s.id)}
