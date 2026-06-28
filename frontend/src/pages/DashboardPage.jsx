@@ -178,7 +178,15 @@ export default function DashboardPage() {
     loadData();
   }, [user, program, faculty, startDate, endDate]);
 
-  // AI overview is NOT auto-loaded — user must click "Generate" to save quota
+  // Auto-load AI overview if VITE_AI_AUTO_LOAD=true (paid tier)
+  // Set to false by default to preserve free tier quota (20 req/day)
+  const aiAutoLoad = import.meta.env.VITE_AI_AUTO_LOAD === 'true';
+
+  useEffect(() => {
+    if (aiAutoLoad && stats && user?.role) {
+      fetchAiOverview(stats);
+    }
+  }, [stats]);
 
   // Auto-fetch AI intelligence report on mount
   const fetchAiReport = async (period = 'daily') => {
@@ -194,7 +202,10 @@ export default function DashboardPage() {
     setAiReportLoading(false);
   };
 
-  // AI report is NOT auto-loaded — user must click ↻ to save quota
+  // Auto-load AI report if VITE_AI_AUTO_LOAD=true (paid tier)
+  useEffect(() => {
+    if (aiAutoLoad && user?.role) fetchAiReport(reportPeriod);
+  }, [user, reportPeriod]);
 
   const formatLeones = (v) => `Le ${(v / 1000000).toFixed(1)}M`;
 
