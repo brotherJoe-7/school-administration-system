@@ -62,13 +62,9 @@ export default function Sidebar({ isOpen, onClose }) {
   };
 
   return (
-    <aside className={`sidebar ${isOpen ? 'mobile-open' : ''}`}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100dvh',
-        overflow: 'hidden',
-      }}
+    <aside
+      className={`sidebar ${isOpen ? 'mobile-open' : ''}`}
+      style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}
     >
 
       {/* ── Logo ── */}
@@ -80,8 +76,8 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
       </div>
 
-      {/* ── Scrollable nav ── */}
-      <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 10px' }}>
+      {/* ── Scrollable nav — flex:1 + overflow:auto keeps footer pinned ── */}
+      <nav style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 10px', minHeight: 0 }}>
         <div className="nav-section-label" style={{ padding: '8px 8px 6px' }}>Navigation</div>
         {navItems.map((item) => (
           <NavLink
@@ -95,7 +91,7 @@ export default function Sidebar({ isOpen, onClose }) {
         ))}
       </nav>
 
-      {/* ── Pinned Footer ── always visible, never clipped ── */}
+      {/* ── Pinned Footer — always visible, never clipped ── */}
       <div style={{
         flexShrink: 0,
         borderTop: '1px solid var(--color-border)',

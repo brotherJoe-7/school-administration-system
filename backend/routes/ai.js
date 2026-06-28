@@ -19,9 +19,18 @@ router.get('/suggestions', authenticate, tenantMiddleware, async (req, res) => {
 });
 
 // POST /api/ai/query - Natural language queries via Gemini
-router.post('/query', authenticate, tenantMiddleware, async (req, res) => {
+router.post('/query', authenticate, async (req, res) => {
   const { query, contextData, contextType } = req.body;
   if (!query) return res.status(400).json({ success: false, message: 'Query is required' });
+
+  const role = req.user?.role || 'admin';
+  const roleLabel = {
+    superadmin: 'Super Administrator (platform-wide access)',
+    admin: 'School Administrator',
+    teacher: 'Teacher',
+    student: 'Student',
+    parent: 'Parent',
+  }[role] || 'Administrator';
 
   try {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -49,8 +58,8 @@ router.post('/query', authenticate, tenantMiddleware, async (req, res) => {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     
-    const prompt = `You are an AI Assistant for a School Administration Platform. You are talking to an admin of a ${contextType || 'school'}. 
-Please answer the following administrative query in a helpful, concise, professional tone. 
+    const prompt = `You are an AI Assistant for a School Administration Platform. You are talking to a ${roleLabel} of a ${contextType || 'school'}. 
+Please answer the following query in a helpful, concise, professional tone relevant to their role. 
 Query: "${query}"
 Use this context data to answer if relevant: ${JSON.stringify(contextData || {})}`;
 
