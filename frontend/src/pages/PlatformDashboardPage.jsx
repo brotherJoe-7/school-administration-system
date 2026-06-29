@@ -34,7 +34,7 @@ export default function PlatformDashboardPage() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '32px' }}>
         <div className="stat-card" style={{ '--accent': 'var(--color-gold, #F59E0B)' }}>
           <div>
-            <div className="stat-value">${data?.mrr?.toLocaleString() || '12,450'}</div>
+            <div className="stat-value">Le {data?.mrr?.toLocaleString() || '12,450,000'}</div>
             <div className="stat-label">Platform MRR</div>
             <div style={{ fontSize: '12px', color: '#10B981', marginTop: '6px' }}>+12% from last month</div>
           </div>

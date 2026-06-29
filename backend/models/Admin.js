@@ -5,6 +5,7 @@ const AdminSchema = new mongoose.Schema({
   full_name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password_hash: { type: String, required: true },
+  school_name: { type: String },
   reset_password_token: { type: String },
   reset_password_expires: { type: Date },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' }

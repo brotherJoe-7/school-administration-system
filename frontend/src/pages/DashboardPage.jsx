@@ -297,18 +297,28 @@ export default function DashboardPage() {
           </h2>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '13px' }}>
             {user?.role === 'admin' && 'System overview and administrative controls'}
+            {user?.role === 'superadmin' && 'Platform-wide oversight — all schools, tenants and system metrics'}
             {user?.role === 'teacher' && 'Manage your classes, student attendance, and grades'}
             {user?.role === 'student' && 'Track your academic progress and records'}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flexShrink: 0, marginTop: '8px' }}>
-          {(user?.role === 'admin' || user?.role === 'superadmin') && (
+          {user?.role === 'admin' && (
             <button
               className="btn btn-primary"
               style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
               onClick={() => navigate('/students/register')}
             >
               Register New Student
+            </button>
+          )}
+          {user?.role === 'superadmin' && (
+            <button
+              className="btn btn-primary"
+              style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
+              onClick={() => navigate('/platform')}
+            >
+              Platform Overview
             </button>
           )}
           {user?.role === 'admin' && (
@@ -491,8 +501,9 @@ export default function DashboardPage() {
             )}
             {user?.role === 'student' && (
               <>
-                <StatCard label="Classes"         value={stats?.total_classes   != null ? stats.total_classes.toLocaleString() : null} accent="#000000" sub="This semester"        onClick={() => navigate('/classes')} />
-                <StatCard label="Attendance Rate" value={stats?.attendance_rate  != null ? `${stats.attendance_rate}%`         : null} accent="#000000" sub="Within current scope"  onClick={() => navigate('/attendance')} />
+                <StatCard label="Enrolled Classes"  value={stats?.total_classes   != null ? stats.total_classes.toLocaleString() : null} accent="#000000" sub="Classes available this semester"  onClick={() => navigate('/classes')} />
+                <StatCard label="My Attendance Rate" value={stats?.attendance_rate  != null ? `${stats.attendance_rate}%`         : null} accent="#000000" sub="Personal attendance record"        onClick={() => navigate('/attendance')} />
+                <StatCard label="My Transcript"      value="View" accent="#000000" sub="Grades & GPA"        onClick={() => navigate('/reports')} />
               </>
             )}
           </div>

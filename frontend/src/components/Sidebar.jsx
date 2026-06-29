@@ -18,10 +18,11 @@ const NAV_ITEMS = {
     { label: 'Settings',       path: '/settings'   },
   ],
   superadmin: [
-    { label: 'Platform Overview', path: '/platform' },
-    { label: 'AI Assistant',      path: '/ai'       },
-    { label: 'System Audit',      path: '/audit'    },
-    { label: 'Settings',          path: '/settings' },
+    { label: 'Platform Overview', path: '/platform'        },
+    { label: 'Register Admin',    path: '/register-admin'  },
+    { label: 'AI Assistant',      path: '/ai'              },
+    { label: 'System Audit',      path: '/audit'           },
+    { label: 'Settings',          path: '/settings'        },
   ],
   teacher: [
     { label: 'Dashboard',    path: '/dashboard'  },

@@ -177,8 +177,9 @@ app.use('/api/payments',  require('./routes/payments'));
 app.use('/api/ai',        require('./routes/ai'));
 app.use('/api/parents',   require('./routes/parents'));
 app.use('/api/public',    require('./routes/public'));
-app.use('/api/platform',  require('./routes/platform'));
-app.use('/api/settings',  require('./routes/settings'));
+app.use('/api/platform',   require('./routes/platform'));
+app.use('/api/settings',   require('./routes/settings'));
+app.use('/api/superadmin', require('./routes/superadmin'));
 
 // Health Check
 app.get('/health', (req, res) => {

@@ -9,7 +9,8 @@ const tenantMiddleware = require('../middleware/tenantMiddleware');
 router.get('/', authenticate, authorize('admin'), tenantMiddleware, async (req, res) => {
   try {
     const { month, status } = req.query;
-    const filter = { tenant_id: req.tenant_id };
+    const filter = {};
+    if (req.tenant_id) filter.tenant_id = req.tenant_id;
 
     if (status) filter.status = status;
 
@@ -46,7 +47,9 @@ router.get('/', authenticate, authorize('admin'), tenantMiddleware, async (req, 
 // GET /api/payroll/my-payslips (teacher)
 router.get('/my-payslips', authenticate, authorize('teacher'), tenantMiddleware, async (req, res) => {
   try {
-    const payslips = await Payroll.find({ teacher_id: req.user.id, tenant_id: req.tenant_id }).sort({ pay_period: -1 });
+    const payslipFilter = { teacher_id: req.user.id };
+    if (req.tenant_id) payslipFilter.tenant_id = req.tenant_id;
+    const payslips = await Payroll.find(payslipFilter).sort({ pay_period: -1 });
     res.json({ success: true, data: payslips });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Failed to fetch payslips' });
@@ -66,21 +69,21 @@ router.post('/', authenticate, authorize('admin'), tenantMiddleware, async (req,
   try {
     // Check for duplicate pay period for this teacher (same year-month)
     const periodDate = new Date(pay_period);
-    const existing = await Payroll.findOne({
+    const dupFilter = {
       teacher_id,
-      tenant_id: req.tenant_id,
       pay_period: {
         $gte: new Date(periodDate.getFullYear(), periodDate.getMonth(), 1),
         $lte: new Date(periodDate.getFullYear(), periodDate.getMonth() + 1, 0, 23, 59, 59)
       }
-    });
+    };
+    if (req.tenant_id) dupFilter.tenant_id = req.tenant_id;
+    const existing = await Payroll.findOne(dupFilter);
 
     if (existing) {
       return res.status(400).json({ success: false, message: 'Payroll already exists for this period' });
     }
 
-    const newPayroll = await Payroll.create({
-      tenant_id: req.tenant_id,
+    const payrollData = {
       teacher_id,
       salary_amount,
       allowances: allowances || 0,
@@ -89,7 +92,10 @@ router.post('/', authenticate, authorize('admin'), tenantMiddleware, async (req,
       pay_period: periodDate,
       status: 'pending',
       created_by: req.user.id
-    });
+    };
+    if (req.tenant_id) payrollData.tenant_id = req.tenant_id;
+
+    const newPayroll = await Payroll.create(payrollData);
 
     res.status(201).json({ success: true, message: 'Payroll entry created', id: newPayroll._id });
   } catch (error) {

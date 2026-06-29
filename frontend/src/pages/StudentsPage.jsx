@@ -180,13 +180,15 @@ export default function StudentsPage() {
             <input className="form-input" placeholder="Name, student number, or email..." value={search}
               onChange={e => { setSearch(e.target.value); setPage(1); }} />
           </div>
-          <div className="form-group">
-            <label className="form-label">Program</label>
-            <select className="form-select" value={program} onChange={e => { setProgram(e.target.value); setPage(1); }}>
-              <option value="">All Programs</option>
-              {programsList.map(p => <option key={p} value={p}>{programLabel(p)}</option>)}
-            </select>
-          </div>
+          {user?.role === 'admin' && (
+            <div className="form-group">
+              <label className="form-label">Program</label>
+              <select className="form-select" value={program} onChange={e => { setProgram(e.target.value); setPage(1); }}>
+                <option value="">All Programs</option>
+                {programsList.map(p => <option key={p} value={p}>{programLabel(p)}</option>)}
+              </select>
+            </div>
+          )}
           <div className="form-group">
             <label className="form-label">Status</label>
             <select className="form-select" value={status} onChange={e => { setStatus(e.target.value); setPage(1); }}>

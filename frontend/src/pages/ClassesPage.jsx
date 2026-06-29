@@ -104,6 +104,7 @@ export default function ClassesPage() {
         )}
       </div>
 
+      {user?.role === 'admin' && (
       <div className="card mb-20" style={{ padding: '16px 20px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div className="form-group mb-0">
@@ -124,6 +125,7 @@ export default function ClassesPage() {
           </div>
         </div>
       </div>
+      )}
 
       <div className="card" style={{padding:0}}>
         <div className="table-wrapper">

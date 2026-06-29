@@ -22,6 +22,7 @@ import PaymentsPage           from './pages/PaymentsPage';
 import SettingsPage           from './pages/SettingsPage';
 import PlatformDashboardPage  from './pages/PlatformDashboardPage';
 import AiAssistantPage        from './pages/AiAssistantPage';
+import RegisterAdminPage      from './pages/RegisterAdminPage';
 import { PrivacyPage, TermsPage, GDPRPage, PricingPage, ContactPage } from './pages/PublicPages';
 
 import ParentDashboardPage    from './pages/ParentDashboardPage';
@@ -93,6 +94,7 @@ function App() {
           <Route path="/settings"   element={<SettingsPage />} />
           <Route path="/ai"         element={<AiAssistantPage />} />
           <Route path="/platform"   element={<PlatformDashboardPage />} />
+          <Route path="/register-admin" element={<RegisterAdminPage />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

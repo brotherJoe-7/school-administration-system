@@ -11,16 +11,22 @@ router.get('/dashboard', async (req, res) => {
     const totalStudents = await Student.countDocuments();
     const recentAudits = await AuditLog.find().sort({ timestamp: -1 }).limit(10).lean();
     
-    // Calculate mock MRR based on schools
-    const mrr = schools.length * 29; // Assuming growth plan avg
+    // Calculate mock MRR based on schools in Leones (Le)
+    const mrr = schools.length * 500000; // 500k Leones per school roughly
     
+    // Fallback for presentation if Tenants are not seeded yet
+    const displaySchools = schools.length > 0 ? schools : [
+      { _id: '1', name: 'Rising Academy', subdomain: 'rising', db_name: 'rising_db' }
+    ];
+    const displaySchoolCount = schools.length > 0 ? schools.length : 1;
+
     res.json({
       success: true,
       data: {
-        totalSchools: schools.length,
-        totalStudents,
-        mrr: mrr > 0 ? mrr : 12450, // mock fallback if 0
-        schools,
+        totalSchools: displaySchoolCount,
+        totalStudents: totalStudents > 0 ? totalStudents : 28,
+        mrr: mrr > 0 ? mrr : 12450000, // mock fallback in Leones
+        schools: displaySchools,
         recentAudits
       }
     });

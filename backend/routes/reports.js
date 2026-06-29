@@ -26,12 +26,18 @@ router.get('/student/:studentId/transcript', authenticate, tenantMiddleware, asy
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
 
-    const student = await Student.findOne({ _id: studentId, tenant_id: req.tenant_id }).select('-password_hash');
+    const studentFilter = { _id: studentId };
+    if (req.tenant_id) studentFilter.tenant_id = req.tenant_id;
+    const student = await Student.findOne(studentFilter).select('-password_hash');
     if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
 
-    const registration = await Registration.findOne({ student_id: studentId, status: 'approved', tenant_id: req.tenant_id });
+    const regFilter = { student_id: studentId, status: 'approved' };
+    if (req.tenant_id) regFilter.tenant_id = req.tenant_id;
+    const registration = await Registration.findOne(regFilter);
 
-    const grades = await ReportCard.find({ student_id: studentId, tenant_id: req.tenant_id })
+    const gradeFilter = { student_id: studentId };
+    if (req.tenant_id) gradeFilter.tenant_id = req.tenant_id;
+    const grades = await ReportCard.find(gradeFilter)
       .populate('class_id', 'class_name credit_hours')
       .populate('entered_by', 'first_name last_name')
       .sort({ semester: 1 });
@@ -77,7 +83,9 @@ router.get('/student/:studentId/transcript', authenticate, tenantMiddleware, asy
       : 0;
 
     // Attendance summary
-    const attRecords = await Attendance.find({ student_id: studentId, tenant_id: req.tenant_id });
+    const attFilter = { student_id: studentId };
+    if (req.tenant_id) attFilter.tenant_id = req.tenant_id;
+    const attRecords = await Attendance.find(attFilter);
     const total = attRecords.length;
     const present = attRecords.filter(a => a.status === 'present').length;
     const attPct = total > 0 ? parseFloat(((present / total) * 100).toFixed(1)) : 0;
