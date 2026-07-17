@@ -171,7 +171,8 @@ export default function DashboardPage() {
         setAiOverview(`⚠️ ${data.message}`);
       }
     } catch (err) {
-      setAiOverview(`⚠️ Network/API Error: ${err.message}`);
+      const details = err.response?.data?.message || err.response?.data || err.message;
+      setAiOverview(`⚠️ Network/API Error: ${typeof details === 'object' ? JSON.stringify(details) : details}`);
       console.error('AI Overview Error:', err);
     }
     setAiLoading(false);
@@ -202,7 +203,8 @@ export default function DashboardPage() {
         setAiReport(`Unable to generate report: ${data.message}`);
       }
     } catch (err) {
-      setAiReport(`⚠️ Network/API Error: ${err.message}`);
+      const details = err.response?.data?.message || err.response?.data || err.message;
+      setAiReport(`⚠️ Network/API Error: ${typeof details === 'object' ? JSON.stringify(details) : details}`);
       console.error('AI Report Error:', err);
     }
     setAiReportLoading(false);
