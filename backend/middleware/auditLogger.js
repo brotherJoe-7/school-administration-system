@@ -29,6 +29,10 @@ const auditLogger = (req, res, next) => {
       // Avoid double logging if the route already did a manual AuditLog (like LOGIN)
       if (pathParts.includes('auth') && req.method === 'POST') return; 
 
+      // Skip logging for mock tokens (e.g. superadmin) whose id is not a valid ObjectId
+      const mongoose = require('mongoose');
+      if (!mongoose.Types.ObjectId.isValid(req.user.id)) return;
+
       AuditLog.create({
         tenant_id: req.tenant_id || req.headers['x-tenant-id'] || null,
         user_id: req.user.id,

@@ -41,6 +41,7 @@ router.post('/admins', authenticate, authorize('superadmin'), async (req, res) =
           name: school_name,
           subdomain,
           db_name: `${subdomain}_db`,
+          admin_email: email,
         }).catch(() => null);
       }
     }

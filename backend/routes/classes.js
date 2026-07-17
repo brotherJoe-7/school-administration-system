@@ -107,7 +107,7 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
       }
     }
 
-    const newClass = await Class.create({
+    const newClass = await Class.create({ tenant_id: req.tenant_id, 
       class_name,
       class_code,
       teacher_id: teacher_id || null,

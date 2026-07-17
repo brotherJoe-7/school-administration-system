@@ -177,7 +177,7 @@ router.get('/transcripts', authenticate, authorize('admin'), tenantMiddleware, a
 router.post('/transcripts/request', authenticate, tenantMiddleware, async (req, res) => {
   const studentId = req.user.role === 'student' ? req.user.id : req.body.student_id;
   try {
-    await Transcript.create({ student_id: studentId, status: 'pending', tenant_id: req.tenant_id });
+    await Transcript.create({ tenant_id: req.tenant_id,  student_id: studentId, status: 'pending', tenant_id: req.tenant_id });
     res.status(201).json({ success: true, message: 'Transcript request submitted' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Request failed' });

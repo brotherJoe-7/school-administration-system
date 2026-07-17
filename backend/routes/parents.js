@@ -34,7 +34,7 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
     const defaultPassword = student.student_number;
     const password_hash = await bcrypt.hash(defaultPassword, 10);
 
-    parent = await Parent.create({
+    parent = await Parent.create({ tenant_id: req.tenant_id, 
       first_name, last_name, email, phone,
       password_hash,
       tenant_id: student.tenant_id,

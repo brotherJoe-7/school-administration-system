@@ -4,6 +4,7 @@ require('dotenv').config();
 
 // Import all models
 const Admin = require('../models/Admin');
+const Tenant = require('../models/Tenant');
 const Teacher = require('../models/Teacher');
 const Student = require('../models/Student');
 const Class = require('../models/Class');
@@ -43,16 +44,30 @@ async function seedDatabase() {
   try {
     let createdAny = false;
 
+    // Ensure a default tenant exists first (Admin schema requires tenant_id)
+    let defaultTenant = await Tenant.findOne({ subdomain: 'default' });
+    if (!defaultTenant) {
+      defaultTenant = await Tenant.create({
+        name: 'Default School',
+        subdomain: 'default',
+        admin_email: 'admin@schooladmin.edu',
+        subscription_status: 'active',
+        plan_type: 'enterprise',
+      });
+      console.log('✅ Default Tenant created');
+    }
+
     // Check and create Admin if not exists
     const existingAdmin = await Admin.findOne({ email: 'admin@schooladmin.edu' });
     if (!existingAdmin) {
       console.log('Creating Admin user...');
-      const adminHash = await bcrypt.hash('Admin@123', 12);
+      const adminHash = await bcrypt.hash('Admin123!', 12);
       await Admin.create({
         full_name: 'System Administrator',
         email: 'admin@schooladmin.edu',
         password_hash: adminHash,
-        status: 'active'
+        status: 'active',
+        tenant_id: defaultTenant._id,
       });
       createdAny = true;
     } else {
@@ -60,7 +75,7 @@ async function seedDatabase() {
     }
 
     if (createdAny) {
-      console.log('🎉 Default Admin created successfully!');
+      console.log('🎉 Default Admin created successfully! Password: Admin123!');
     } else {
       console.log('✅ Default Admin already exists');
     }

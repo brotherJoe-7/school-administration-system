@@ -78,7 +78,7 @@ router.post('/', authenticate, authorize('admin'), async (req, res) => {
     });
     const teacherNumber = `TCH${year}${String(count + 1).padStart(3, '0')}`;
 
-    await Teacher.create({
+    await Teacher.create({ tenant_id: req.tenant_id, 
       teacher_number: teacherNumber,
       first_name,
       last_name,

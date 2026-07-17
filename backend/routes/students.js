@@ -131,7 +131,7 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
     // Sanitize empty strings
     const sanitize = (val) => val === '' ? undefined : val;
 
-    const student = await Student.create({
+    const student = await Student.create({ tenant_id: req.tenant_id, 
       student_number: student_number,
       first_name: sanitize(first_name),
       last_name: sanitize(last_name),
@@ -150,7 +150,7 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
       status: 'active'
     });
 
-    await Registration.create({
+    await Registration.create({ tenant_id: req.tenant_id, 
       student_id: student._id,
       program,
       year_of_study: year_of_study || 1,
@@ -285,7 +285,7 @@ router.get('/:id/payments', authenticate, async (req, res) => {
 router.post('/:id/payments', authenticate, authorize('admin'), async (req, res) => {
   const { amount_paid, amount_due, payment_date, payment_method, reference, semester } = req.body;
   try {
-    await Payment.create({
+    await Payment.create({ tenant_id: req.tenant_id, 
       student_id: req.params.id,
       amount_paid,
       amount_due,
