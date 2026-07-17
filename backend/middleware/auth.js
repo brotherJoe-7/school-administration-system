@@ -19,7 +19,7 @@ const authenticate = (req, res, next) => {
     req.tenant_id = req.headers['x-tenant-id'] || req.user.tenant_id || null;
     next();
   } catch (err) {
-    return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+    return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
 };
 
