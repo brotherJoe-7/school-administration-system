@@ -170,7 +170,10 @@ export default function DashboardPage() {
       } else {
         setAiOverview(`⚠️ ${data.message}`);
       }
-    } catch { /* silent — AI overview is optional */ }
+    } catch (err) {
+      setAiOverview(`⚠️ Network/API Error: ${err.message}`);
+      console.error('AI Overview Error:', err);
+    }
     setAiLoading(false);
   };
 
@@ -198,7 +201,10 @@ export default function DashboardPage() {
       } else {
         setAiReport(`Unable to generate report: ${data.message}`);
       }
-    } catch { setAiReport(''); }
+    } catch (err) {
+      setAiReport(`⚠️ Network/API Error: ${err.message}`);
+      console.error('AI Report Error:', err);
+    }
     setAiReportLoading(false);
   };
 
