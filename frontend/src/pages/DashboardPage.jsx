@@ -149,9 +149,14 @@ export default function DashboardPage() {
         total_students: statsData.total_students,
         total_teachers: statsData.total_teachers,
         total_classes: statsData.total_classes,
-        attendance_rate: statsData.attendance_rate,
-        tuition_collected: statsData.tuition_collected,
+        attendance_rate: `${statsData.attendance_rate}%`,
+        tuition_collected: statsData.tuition_collected
+          ? `Le ${Number(statsData.tuition_collected).toLocaleString()}`
+          : 'N/A',
         pending_approvals: statsData.pending_registrations,
+        payroll_summary: payroll.length > 0
+          ? `${payroll.length} payroll entries; total net pay Le ${payroll.reduce((s, p) => s + (p.net_pay || 0), 0).toLocaleString()}`
+          : 'No payroll data',
       };
       let promptStr = `Generate a brief 3-4 sentence executive dashboard summary for the school administrator. Be direct, professional and data-driven. Highlight any concerns if attendance is below 80% or pending approvals are high.`;
       if (user?.role === 'teacher') {
@@ -288,7 +293,7 @@ export default function DashboardPage() {
       
       {/* Welcome Banner */}
       <div style={{
-        background: 'linear-gradient(135deg, #111 0%, #000 100%)',
+        background: 'var(--color-bg-secondary)',
         border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-lg)',
         padding: '20px 24px',
@@ -314,7 +319,7 @@ export default function DashboardPage() {
           {user?.role === 'admin' && (
             <button
               className="btn btn-primary"
-              style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
+              style={{ fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
               onClick={() => navigate('/students/register')}
             >
               Register New Student
@@ -323,7 +328,7 @@ export default function DashboardPage() {
           {user?.role === 'superadmin' && (
             <button
               className="btn btn-primary"
-              style={{ backgroundColor: '#ffffff', borderColor: '#ffffff', color: '#000000', fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
+              style={{ fontWeight: 700, fontSize: '13px', padding: '8px 14px' }}
               onClick={() => navigate('/platform')}
             >
               Platform Overview
@@ -333,7 +338,7 @@ export default function DashboardPage() {
             <button
               className="btn btn-secondary"
               onClick={() => navigate('/approvals')}
-              style={{ borderColor: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: '13px', padding: '8px 14px' }}
+              style={{ fontSize: '13px', padding: '8px 14px' }}
             >
               Approval Queue
             </button>
@@ -384,7 +389,7 @@ export default function DashboardPage() {
 
       {/* ── AI Intelligence Report (auto-generated daily/weekly) ── */}
       {(user?.role === 'admin' || user?.role === 'superadmin') && (
-        <div className="card mb-20" style={{ borderLeft: '4px solid #7C3AED', background: 'var(--color-bg-card)' }}>
+        <div className="card mb-20" style={{ borderLeft: '4px solid var(--color-info)', background: 'var(--color-bg-card)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
             <div>
               <h3 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>AI Intelligence Report</h3>
@@ -400,7 +405,7 @@ export default function DashboardPage() {
                     onClick={() => setReportPeriod(p)}
                     style={{
                       padding: '4px 12px', fontSize: '11px', fontWeight: 600,
-                      background: reportPeriod === p ? '#7C3AED' : 'transparent',
+                      background: reportPeriod === p ? 'var(--color-info)' : 'transparent',
                       color: reportPeriod === p ? '#fff' : 'var(--color-text-muted)',
                       border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                       textTransform: 'capitalize',
