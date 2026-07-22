@@ -5,16 +5,10 @@ import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const FEATURES = [
-  { icon: '🎓', title: 'Student Management', desc: 'Track enrollment, attendance & performance across classes.' },
-  { icon: '💰', title: 'Financial Tracking', desc: 'Automate fee collection and generate instant financial reports.' },
-  { icon: '📊', title: 'Real-time Analytics', desc: 'Data-driven dashboards for smarter institutional decisions.' },
-  { icon: '🤖', title: 'AI-Powered Insights', desc: 'Gemini AI summarizes your school data automatically.' },
-];
-
-const STATS = [
-  { value: '2,400+', label: 'Students Tracked' },
-  { value: '98%', label: 'Uptime SLA' },
-  { value: '40+', label: 'Schools' },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>, title: 'Student Management', desc: 'Track enrollment, attendance & performance across classes.' },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>, title: 'Financial Tracking', desc: 'Automate fee collection and generate instant financial reports.' },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>, title: 'Real-time Analytics', desc: 'Data-driven dashboards for smarter institutional decisions.' },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>, title: 'AI-Powered Insights', desc: 'Gemini AI summarizes your school data automatically.' },
 ];
 
 export default function LoginPage() {
@@ -83,136 +77,9 @@ export default function LoginPage() {
   });
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-primary)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-primary)' }} className="login-container">
 
-      {/* ── LEFT PANEL ─────────────────────────────────── */}
-      <div style={{
-        flex: '0 0 48%',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '48px',
-        background: 'var(--color-bg-secondary)',
-        borderRight: '1px solid var(--color-border)',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Decorative accent ring */}
-        <div style={{
-          position: 'absolute', top: '-80px', right: '-80px',
-          width: '320px', height: '320px',
-          borderRadius: '50%',
-          border: '1px solid var(--color-gold-muted)',
-          opacity: 0.4,
-          pointerEvents: 'none',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '-120px', left: '-60px',
-          width: '400px', height: '400px',
-          borderRadius: '50%',
-          border: '1px solid var(--color-gold-muted)',
-          opacity: 0.25,
-          pointerEvents: 'none',
-        }} />
-
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <div style={{
-            width: '48px', height: '48px',
-            background: 'var(--color-gold)',
-            borderRadius: '14px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: 'var(--shadow-glow)',
-            flexShrink: 0,
-          }}>
-            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '20px', color: 'var(--color-bg-primary)' }}>SA</span>
-          </div>
-          <div>
-            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '16px', color: 'var(--color-text-primary)' }}>School SaaS</div>
-            <div style={{ fontSize: '11px', color: 'var(--color-gold)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Administration Platform</div>
-          </div>
-        </div>
-
-        {/* Main Hero Copy */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '28px', paddingTop: '32px', paddingBottom: '32px' }}>
-          <div>
-            <div style={{
-              display: 'inline-block',
-              background: 'var(--color-gold-muted)',
-              border: '1px solid rgba(245,158,11,0.3)',
-              color: 'var(--color-gold)',
-              fontSize: '11px', fontWeight: 700,
-              padding: '4px 12px', borderRadius: '999px',
-              letterSpacing: '0.07em', textTransform: 'uppercase',
-              marginBottom: '16px',
-            }}>
-              Trusted by schools across Sierra Leone
-            </div>
-            <h1 style={{
-              fontFamily: 'Outfit, sans-serif',
-              fontSize: 'clamp(28px, 3.5vw, 42px)',
-              fontWeight: 900,
-              color: 'var(--color-text-primary)',
-              lineHeight: 1.15,
-              letterSpacing: '-0.5px',
-              margin: 0,
-            }}>
-              Manage your school<br />
-              <span style={{ color: 'var(--color-gold)' }}>smarter, not harder.</span>
-            </h1>
-            <p style={{
-              marginTop: '16px',
-              color: 'var(--color-text-muted)',
-              fontSize: '16px',
-              lineHeight: 1.7,
-              maxWidth: '380px',
-            }}>
-              One unified platform for student records, finances, grading, attendance, and AI-powered analytics.
-            </p>
-          </div>
-
-          {/* Feature List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {FEATURES.map((f, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                <div style={{
-                  width: '38px', height: '38px', flexShrink: 0,
-                  background: 'var(--color-bg-hover)',
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '10px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '18px',
-                }}>{f.icon}</div>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-text-primary)' }}>{f.title}</div>
-                  <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>{f.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Stats Bar */}
-        <div style={{
-          display: 'flex', gap: '0',
-          borderTop: '1px solid var(--color-border)',
-          paddingTop: '24px',
-        }}>
-          {STATS.map((s, i) => (
-            <div key={i} style={{
-              flex: 1,
-              paddingRight: i < STATS.length - 1 ? '20px' : 0,
-              borderRight: i < STATS.length - 1 ? '1px solid var(--color-border)' : 'none',
-              marginRight: i < STATS.length - 1 ? '20px' : 0,
-            }}>
-              <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '22px', color: 'var(--color-gold)' }}>{s.value}</div>
-              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── RIGHT PANEL: LOGIN FORM ─────────────────────── */}
+      {/* ── LEFT PANEL: LOGIN FORM ─────────────────────── */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -446,10 +313,118 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Mobile: hide left panel */}
+      {/* ── RIGHT PANEL: INFO PORTION ─────────────────────────────────── */}
+      <div className="login-info-panel" style={{
+        flex: '0 0 48%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '48px',
+        background: 'var(--color-bg-secondary)',
+        borderLeft: '1px solid var(--color-border)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative accent ring */}
+        <div style={{
+          position: 'absolute', top: '-80px', right: '-80px',
+          width: '320px', height: '320px',
+          borderRadius: '50%',
+          border: '1px solid var(--color-gold-muted)',
+          opacity: 0.4,
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: '-120px', left: '-60px',
+          width: '400px', height: '400px',
+          borderRadius: '50%',
+          border: '1px solid var(--color-gold-muted)',
+          opacity: 0.25,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            width: '48px', height: '48px',
+            background: 'var(--color-gold)',
+            borderRadius: '14px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: 'var(--shadow-glow)',
+            flexShrink: 0,
+          }}>
+            <span style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 900, fontSize: '20px', color: 'var(--color-bg-primary)' }}>SA</span>
+          </div>
+          <div>
+            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '16px', color: 'var(--color-text-primary)' }}>School SaaS</div>
+            <div style={{ fontSize: '11px', color: 'var(--color-gold)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Administration Platform</div>
+          </div>
+        </div>
+
+        {/* Main Hero Copy */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '28px', paddingTop: '32px', paddingBottom: '32px' }}>
+          <div>
+            <div style={{
+              display: 'inline-block',
+              background: 'var(--color-gold-muted)',
+              border: '1px solid rgba(245,158,11,0.3)',
+              color: 'var(--color-gold)',
+              fontSize: '11px', fontWeight: 700,
+              padding: '4px 12px', borderRadius: '999px',
+              letterSpacing: '0.07em', textTransform: 'uppercase',
+              marginBottom: '16px',
+            }}>
+              Trusted by schools across Sierra Leone
+            </div>
+            <h1 style={{
+              fontFamily: 'Outfit, sans-serif',
+              fontSize: 'clamp(28px, 3.5vw, 42px)',
+              fontWeight: 900,
+              color: 'var(--color-text-primary)',
+              lineHeight: 1.15,
+              letterSpacing: '-0.5px',
+              margin: 0,
+            }}>
+              Manage your school<br />
+              <span style={{ color: 'var(--color-gold)' }}>smarter, not harder.</span>
+            </h1>
+            <p style={{
+              marginTop: '16px',
+              color: 'var(--color-text-muted)',
+              fontSize: '16px',
+              lineHeight: 1.7,
+              maxWidth: '380px',
+            }}>
+              One unified platform for student records, finances, grading, attendance, and AI-powered analytics.
+            </p>
+          </div>
+
+          {/* Feature List */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {FEATURES.map((f, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                <div style={{
+                  width: '38px', height: '38px', flexShrink: 0,
+                  background: 'var(--color-bg-hover)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '10px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--color-text-primary)',
+                }}>{f.icon}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '14px', color: 'var(--color-text-primary)' }}>{f.title}</div>
+                  <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile: hide info panel (right) */}
       <style>{`
         @media (max-width: 768px) {
-          .login-left-panel { display: none !important; }
+          .login-info-panel { display: none !important; }
         }
       `}</style>
     </div>
