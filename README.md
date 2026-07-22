@@ -10,8 +10,9 @@ A full-stack, production-ready Multi-Tenant Software-as-a-Service (SaaS) academi
 3. [Live Demo](#live-demo)
 4. [Architecture & Features](#architecture--features)
 5. [Tech Stack](#tech-stack)
-6. [Deployment & Scalability Instructions](#deployment--scalability-instructions)
-7. [License](#license)
+6. [Getting Started & Local Setup](#getting-started--local-setup)
+7. [Deployment & Scalability](#deployment--scalability)
+8. [License](#license)
 
 ---
 
@@ -73,7 +74,83 @@ This platform is explicitly designed in alignment with UN SDG 4: *Ensure inclusi
 
 ---
 
-## Deployment & Scalability Instructions
+## Getting Started & Local Setup
+
+Follow these steps to download, install, and run the School Administration System locally on your machine.
+
+### Prerequisites
+- **Node.js** (v16.0 or higher recommended)
+- **MongoDB** (Local instance or MongoDB Atlas cluster)
+- **Git** (for downloading the source code)
+
+### 1. Download the Source Code
+Clone the repository to your local machine:
+```bash
+git clone https://github.com/brotherJoe-7/school-administration-system.git
+cd school-administration-system
+```
+
+### 2. Install Dependencies
+The project is split into two directories: `frontend` and `backend`. You need to install dependencies for both.
+
+**Backend:**
+```bash
+cd backend
+npm install
+```
+
+**Frontend:**
+```bash
+cd ../frontend
+npm install
+```
+
+### 3. Setup Environment Variables
+You need to configure the environment variables for both the backend and frontend.
+
+**Backend (`backend/.env`):**
+Create a `.env` file in the `backend/` directory:
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/school_saas  # Or your MongoDB Atlas URI
+JWT_SECRET=your_super_secret_jwt_key_here
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY  # Get from Google AI Studio (optional for testing)
+NODE_ENV=development
+```
+
+**Frontend (`frontend/.env`):**
+Create a `.env` file in the `frontend/` directory:
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_AI_AUTO_LOAD=false
+```
+
+### 4. Run the Application
+Open two separate terminal windows/tabs to run the backend and frontend simultaneously.
+
+**Terminal 1 (Backend):**
+```bash
+cd backend
+npm run dev
+```
+*The backend server should start on `http://localhost:5000` and automatically connect to MongoDB.*
+
+**Terminal 2 (Frontend):**
+```bash
+cd frontend
+npm run dev
+```
+*The Vite development server will start. Open your browser and navigate to `http://localhost:5173`.*
+
+### 5. Initial System Setup
+1. Open `http://localhost:5173` in your browser.
+2. Click **Create School Account** to register a new school (tenant) and a superadmin user.
+3. Once registered, log in to access the platform.
+4. From the Superadmin or Admin dashboard, you can begin registering teachers, students, and setting up classes.
+
+---
+
+## Deployment & Scalability
 
 ### 1. Frontend Deployment (Vercel)
 - Connect the repository to Vercel.
