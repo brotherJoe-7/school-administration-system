@@ -101,7 +101,8 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
   const {
     first_name, last_name, email, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,
-    emergency_contact_name, emergency_contact_phone
+    emergency_contact_name, emergency_contact_phone,
+    national_id, global_tracking_id
   } = req.body;
 
   if (!first_name || !last_name || !program) {
@@ -110,14 +111,15 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
 
   try {
     if (email) {
-      const existingEmail = await Student.findOne({ email });
+      const existingEmail = await Student.findOne({ email, tenant_id: req.tenant_id });
       if (existingEmail) {
-        return res.status(400).json({ success: false, message: 'Email already registered' });
+        return res.status(400).json({ success: false, message: 'Email already registered in this school' });
       }
     }
 
     const year = new Date().getFullYear();
     const count = await Student.countDocuments({
+      tenant_id: req.tenant_id,
       created_at: {
         $gte: new Date(`${year}-01-01`),
         $lte: new Date(`${year}-12-31T23:59:59.999Z`)
@@ -131,8 +133,16 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
     // Sanitize empty strings
     const sanitize = (val) => val === '' ? undefined : val;
 
+    // Determine Global Tracking ID
+    let final_tracking_id = sanitize(global_tracking_id) || sanitize(national_id);
+    if (!final_tracking_id) {
+      final_tracking_id = `WAEC-${year}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    }
+
     const student = await Student.create({ tenant_id: req.tenant_id, 
       student_number: student_number,
+      national_id: sanitize(national_id),
+      global_tracking_id: final_tracking_id,
       first_name: sanitize(first_name),
       last_name: sanitize(last_name),
       email: sanitize(email) || `pending_${student_number}@schooladmin.edu`,
@@ -218,7 +228,7 @@ router.put('/complete-setup', authenticate, async (req, res) => {
 
 // PUT /api/students/:id (admin update)
 router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
-  const { first_name, last_name, email, phone, address, status } = req.body;
+  const { first_name, last_name, email, phone, address, status, transfer_destination } = req.body;
   const AuditLog = require('../models/AuditLog');
   try {
     // Fetch the current record first so we can write a clean audit note
@@ -232,6 +242,7 @@ router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
     if (phone      !== undefined) updateFields.phone      = phone;
     if (address    !== undefined) updateFields.address    = address;
     if (status     !== undefined) updateFields.status     = status;
+    if (transfer_destination !== undefined) updateFields.transfer_destination = transfer_destination;
 
     await Student.findByIdAndUpdate(req.params.id, updateFields);
 

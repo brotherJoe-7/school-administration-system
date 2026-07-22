@@ -37,6 +37,8 @@ router.get('/student/:studentId/transcript', authenticate, tenantMiddleware, asy
 
     const gradeFilter = { student_id: studentId };
     if (req.tenant_id) gradeFilter.tenant_id = req.tenant_id;
+    if (req.query.semester) gradeFilter.semester = req.query.semester;
+
     const grades = await ReportCard.find(gradeFilter)
       .populate('class_id', 'class_name credit_hours')
       .populate('entered_by', 'first_name last_name')

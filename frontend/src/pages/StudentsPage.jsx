@@ -37,6 +37,11 @@ export default function StudentsPage() {
   const [viewParents, setViewParents] = useState(null); // holds { student, parents: [] }
   const [loadingViewParents, setLoadingViewParents] = useState(false);
 
+  // Transfer Student
+  const [transferStudent, setTransferStudent] = useState(null);
+  const [transferForm, setTransferForm] = useState({ destination: '' });
+  const [transferLoading, setTransferLoading] = useState(false);
+
   const [openMenuId, setOpenMenuId] = useState(null);
 
   // Close dropdown when clicking outside
@@ -87,6 +92,25 @@ export default function StudentsPage() {
       fetchStudents();
     } catch {
       toast.error('Failed to delete student');
+    }
+  };
+
+  const handleTransfer = async (e) => {
+    e.preventDefault();
+    setTransferLoading(true);
+    try {
+      await API.put(`/students/${transferStudent.id}`, { 
+        status: 'transferred', 
+        transfer_destination: transferForm.destination 
+      });
+      toast.success('Student marked as transferred');
+      setTransferStudent(null);
+      setTransferForm({ destination: '' });
+      fetchStudents();
+    } catch {
+      toast.error('Failed to transfer student');
+    } finally {
+      setTransferLoading(false);
     }
   };
 
@@ -197,6 +221,7 @@ export default function StudentsPage() {
               <option value="pending">Pending</option>
               <option value="suspended">Suspended</option>
               <option value="graduated">Graduated</option>
+              <option value="transferred">Transferred</option>
             </select>
           </div>
         </div>
@@ -251,6 +276,9 @@ export default function StudentsPage() {
                             <button className="btn btn-secondary btn-sm" onClick={() => handleSuspend(s.id, s.status)}>
                               {s.status === 'suspended' ? 'Activate' : 'Suspend'}
                             </button>
+                            <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-info)' }} onClick={() => setTransferStudent(s)}>
+                              Transfer
+                            </button>
                             <button className="btn btn-secondary btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => handleDelete(s.id)}>
                               Delete
                             </button>
@@ -284,6 +312,7 @@ export default function StudentsPage() {
                                 <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-text-primary)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); handleViewParent(s); }}>View Parent</button>
                                 <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
                                 <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-warning)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); handleSuspend(s.id, s.status); }}>{s.status === 'suspended' ? 'Activate' : 'Suspend'}</button>
+                                <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-info)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); setTransferStudent(s); }}>Transfer</button>
                                 <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); handleDelete(s.id); }}>Delete</button>
                               </>
                             )}
@@ -489,6 +518,37 @@ export default function StudentsPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer Student Modal */}
+      {transferStudent && (
+        <div className="modal-overlay" onClick={() => setTransferStudent(null)}>
+          <div className="modal-box" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Transfer {transferStudent.first_name} {transferStudent.last_name}</h3>
+              <button className="btn btn-secondary btn-sm" onClick={() => setTransferStudent(null)}>x</button>
+            </div>
+            <div className="modal-body">
+              <div style={{ background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px' }}>
+                <p style={{ fontSize: '13px', color: '#3b82f6', margin: 0 }}>
+                  Transferring this student will change their status to "Transferred". Their records will be preserved. Use National ID (if available) or Student Number as the transfer identifier: <strong>{transferStudent.national_id || transferStudent.student_number}</strong>.
+                </p>
+              </div>
+              <form onSubmit={handleTransfer} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Transfer Destination (School Name or Program)</label>
+                  <input className="form-input" required value={transferForm.destination} onChange={e => setTransferForm({ destination: e.target.value })} placeholder="e.g. Rising Academy New Campus" />
+                </div>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                  <button type="button" className="btn btn-secondary" onClick={() => setTransferStudent(null)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary" disabled={transferLoading}>
+                    {transferLoading ? 'Transferring...' : 'Transfer Student'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

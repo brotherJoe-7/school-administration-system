@@ -24,7 +24,7 @@ export default function StudentRegistrationPage() {
   const [loading, setLoading]   = useState(false);
   const [programs, setPrograms] = useState([]);
   const [form, setForm] = useState({
-    first_name: '', last_name: '', email: '',
+    first_name: '', last_name: '', email: '', national_id: '', global_tracking_id: '',
     date_of_birth: '', gender: '', phone: '', address: '', nationality: 'Sierra Leonean',
     emergency_contact_name: '', emergency_contact_phone: '',
     program: '', year_of_study: '1'
@@ -79,6 +79,8 @@ export default function StudentRegistrationPage() {
             <Field label="Last Name" name="last_name" required form={form} set={set} />
             <Field label="Email Address (Optional)" name="email" type="email" form={form} set={set} />
             <Field label="Phone" name="phone" form={form} set={set} />
+            <Field label="National ID (Optional)" name="national_id" form={form} set={set} />
+            <Field label="Previous Global ID (Optional, for transfers)" name="global_tracking_id" form={form} set={set} />
             <Field label="Date of Birth" name="date_of_birth" type="date" required form={form} set={set} />
             <Field label="Gender" name="gender" options={[
               { value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }

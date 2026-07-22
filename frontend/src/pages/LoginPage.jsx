@@ -4,7 +4,6 @@ import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -63,19 +62,26 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-left">
-        <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="4" y1="4" x2="20" y2="20"></line>
-          <line x1="4" y1="20" x2="20" y2="4"></line>
-        </svg>
+    <div className="login-page" style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-primary)' }}>
+      {/* Left Column: System Information */}
+      <div className="login-left" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px', background: 'var(--color-bg-secondary)', borderRight: '1px solid var(--color-border)' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', textAlign: 'center', maxWidth: '400px' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '20px', background: 'var(--color-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-glow)' }}>
+            <span style={{ fontSize: '36px', fontWeight: '800', color: 'var(--color-bg-primary)' }}>SA</span>
+          </div>
+          <h2 style={{ fontSize: '32px', fontWeight: '800', letterSpacing: '-0.5px', color: 'var(--color-text-primary)' }}>School Administration</h2>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '18px', lineHeight: '1.6' }}>
+            Empowering education through a secure, seamless, and integrated platform. Manage your institution efficiently and unlock your full potential.
+          </p>
+        </div>
       </div>
 
-      <div className="login-right">
-        <div className="login-card">
-          <div className="login-logo">
-            <h1>Sign in</h1>
-            <p>Use your portal account</p>
+      {/* Right Column: Login Form */}
+      <div className="login-right" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+        <div className="login-card" style={{ width: '100%', maxWidth: '440px', padding: '40px', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--color-border)' }}>
+          <div className="login-logo" style={{ marginBottom: '32px' }}>
+            <h1 style={{ fontSize: '28px', color: 'var(--color-text-primary)' }}>Sign in</h1>
+            <p style={{ color: 'var(--color-text-muted)', marginTop: '8px' }}>Use your portal account</p>
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -87,6 +93,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                style={{ background: 'var(--color-bg-primary)' }}
               />
             </div>
 
@@ -100,7 +107,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required={!forgotMode}
-                    style={{ paddingRight: '40px' }}
+                    style={{ paddingRight: '40px', background: 'var(--color-bg-primary)' }}
                   />
                   <button
                     type="button"
@@ -138,7 +145,7 @@ export default function LoginPage() {
 
             {forgotMode && (
               <div className="form-group">
-                <select className="form-select" value={role} onChange={(e) => setRole(e.target.value)}>
+                <select className="form-select" value={role} onChange={(e) => setRole(e.target.value)} style={{ background: 'var(--color-bg-primary)' }}>
                   <option value="student">Student</option>
                   <option value="teacher">Teacher</option>
                   <option value="parent">Parent</option>
@@ -147,22 +154,22 @@ export default function LoginPage() {
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '8px' }}>
               <button className="btn btn-primary" type="submit" disabled={loading}>
                 {loading ? (
-                  <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2, borderColor: '#000', borderTopColor: '#fff' }} />
+                  <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2, borderColor: 'var(--color-bg-primary)', borderTopColor: 'var(--color-text-primary)' }} />
                 ) : (
                   forgotMode ? 'Send Reset Link' : 'Next'
                 )}
               </button>
               
               {!forgotMode && (
-                <button type="button" onClick={() => setForgotMode(true)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '14px', cursor: 'pointer', padding: 0, textAlign: 'center', marginTop: '10px' }}>
+                <button type="button" onClick={() => setForgotMode(true)} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '14px', cursor: 'pointer', padding: 0, textAlign: 'center', marginTop: '4px' }}>
                   Forgot password?
                 </button>
               )}
               {forgotMode && (
-                <button type="button" onClick={() => setForgotMode(false)} style={{ background: 'none', border: 'none', color: '#fff', fontSize: '14px', cursor: 'pointer', padding: 0, textAlign: 'center', marginTop: '10px' }}>
+                <button type="button" onClick={() => setForgotMode(false)} style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '14px', cursor: 'pointer', padding: 0, textAlign: 'center', marginTop: '4px' }}>
                   Back to Login
                 </button>
               )}
