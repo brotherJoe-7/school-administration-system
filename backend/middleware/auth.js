@@ -10,10 +10,6 @@ const authenticate = (req, res, next) => {
   }
 
   try {
-    if (token === 'mock-super-token') {
-      req.user = { id: 'superadmin', role: 'superadmin', email: 'superadmin@schoolsaas.com', name: 'Platform Owner' };
-      return next();
-    }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     req.tenant_id = req.headers['x-tenant-id'] || req.user.tenant_id || null;

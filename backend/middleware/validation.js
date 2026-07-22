@@ -36,7 +36,7 @@ const passwordValidation = body('password')
 // Auth validations
 const loginValidation = [
   emailValidation,
-  passwordValidation,
+  body('password').notEmpty().withMessage('Password is required'),
   validate
 ];
 

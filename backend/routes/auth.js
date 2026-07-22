@@ -65,7 +65,7 @@ router.post('/login', loginValidation, async (req, res) => {
       action: 'LOGIN'
     }).catch(() => {}); // Don't fail login if audit logging fails
 
-    console.log(`Login successful: email=${email}, role=${userRole}`);
+    console.log(`Login successful: role=${userRole}`);
     res.json({
       success: true,
       message: 'Login successful',
@@ -140,12 +140,11 @@ router.post('/forgot-password', async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    // In production, send email with reset link
-    // For now, log the token to the server console only
-    const frontendUrl = process.env.NODE_ENV === 'production' 
-      ? 'https://school-administration-system.vercel.app' 
-      : 'http://localhost:5173';
-    console.log(`[SECURE] Password reset link for ${email}: ${frontendUrl}/reset-password?token=${resetToken}`);
+    // In production, send email with reset link. Never expose token in logs.
+    if (process.env.NODE_ENV !== 'production') {
+      const frontendUrl = 'http://localhost:5173';
+      console.log(`[DEV ONLY] Password reset link for ${email}: ${frontendUrl}/reset-password?token=${resetToken}`);
+    }
     
     res.json({ 
       success: true, 

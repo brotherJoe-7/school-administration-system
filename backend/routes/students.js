@@ -27,6 +27,8 @@ router.get('/count', authenticate, async (req, res) => {
 router.get('/', authenticate, authorize('admin', 'teacher'), async (req, res) => {
   try {
     const { page = 1, limit = 20, search = '', program = '', status = '' } = req.query;
+    const safePage  = Math.max(1, parseInt(page)  || 1);
+    const safeLimit = Math.min(200, Math.max(1, parseInt(limit) || 20));
     const filter = {};
 
     if (search) {
@@ -51,8 +53,8 @@ router.get('/', authenticate, authorize('admin', 'teacher'), async (req, res) =>
     const total = await Student.countDocuments(filter);
     const students = await Student.find(filter)
       .sort({ created_at: -1 })
-      .skip((parseInt(page) - 1) * parseInt(limit))
-      .limit(parseInt(limit));
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit);
 
     const studentData = await Promise.all(students.map(async (s) => {
       const reg = await Registration.findOne({ student_id: s._id }).sort({ submitted_at: -1 });
@@ -67,7 +69,7 @@ router.get('/', authenticate, authorize('admin', 'teacher'), async (req, res) =>
       };
     }));
 
-    res.json({ success: true, data: studentData, total, page: parseInt(page), limit: parseInt(limit) });
+    res.json({ success: true, data: studentData, total, page: safePage, limit: safeLimit });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Failed to fetch students' });
@@ -77,7 +79,16 @@ router.get('/', authenticate, authorize('admin', 'teacher'), async (req, res) =>
 // GET /api/students/:id
 router.get('/:id', authenticate, async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id).select('-password_hash');
+    // Students can only view their own profile
+    if (req.user.role === 'student' && req.user.id !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    // Teachers and admins can only see students in their tenant
+    const filter = { _id: req.params.id };
+    if (req.tenant_id && req.user.role !== 'superadmin') {
+      filter.tenant_id = req.tenant_id;
+    }
+    const student = await Student.findOne(filter).select('-password_hash');
     if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
     
     const reg = await Registration.findOne({ student_id: student._id }).sort({ submitted_at: -1 });
