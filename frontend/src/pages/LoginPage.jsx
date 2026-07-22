@@ -62,6 +62,7 @@ export default function LoginPage() {
     }
   };
 
+  return (
     <div className="login-page">
       <div className="login-left">
         <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
