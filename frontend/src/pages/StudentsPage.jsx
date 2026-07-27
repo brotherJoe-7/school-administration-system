@@ -44,6 +44,7 @@ export default function StudentsPage() {
 
   const [idCardStudent, setIdCardStudent] = useState(null);
   const [schoolColor, setSchoolColor] = useState('#4f46e5');
+  const [schoolName, setSchoolName] = useState('School Administration System');
   const [openMenuId, setOpenMenuId] = useState(null);
 
   // Close dropdown when clicking outside
@@ -62,8 +63,12 @@ export default function StudentsPage() {
   useEffect(() => {
     API.get('/settings/tenant')
       .then(res => {
-        const color = res.data?.data?.custom_theme?.primary_color;
-        if (color && color !== '#000000') setSchoolColor(color);
+        const tenantData = res.data?.data;
+        if (tenantData) {
+          const color = tenantData.custom_theme?.primary_color;
+          if (color && color !== '#000000') setSchoolColor(color);
+          if (tenantData.name) setSchoolName(tenantData.name);
+        }
       })
       .catch(() => {});
   }, []);
@@ -640,9 +645,9 @@ export default function StudentsPage() {
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 18px' }}>
 
                   {/* Header */}
-                  <div style={{ borderBottom: '2px solid #4f46e5', paddingBottom: '8px', marginBottom: '10px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#4f46e5', letterSpacing: '2px', textTransform: 'uppercase' }}>Student Identity Card</div>
-                    <div style={{ fontSize: '9px', color: '#9ca3af', letterSpacing: '0.5px' }}>School Administration System</div>
+                  <div style={{ borderBottom: `2px solid ${schoolColor}`, paddingBottom: '8px', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: schoolColor, letterSpacing: '2px', textTransform: 'uppercase' }}>Student Identity Card</div>
+                    <div style={{ fontSize: '9px', color: '#9ca3af', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{schoolName}</div>
                   </div>
 
                   {/* Details Grid */}
