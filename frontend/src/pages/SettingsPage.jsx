@@ -40,7 +40,7 @@ export default function SettingsPage() {
     { name: 'Pink', value: '#EC4899' },
   ];
 
-  const handleColorChange = (newColor) => {
+  const handleColorChange = async (newColor) => {
     setColor(newColor);
     localStorage.setItem('tenantColor', newColor);
     document.documentElement.style.setProperty('--color-gold', newColor);
@@ -49,7 +49,14 @@ export default function SettingsPage() {
     if(rgb) {
       document.documentElement.style.setProperty('--color-gold-muted', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`);
     }
-    toast.success('Theme color updated successfully');
+    
+    // Save globally to database
+    try {
+      await API.put('/settings/tenant', { primary_color: newColor });
+      toast.success('Theme color updated successfully');
+    } catch (err) {
+      toast.error('Failed to save theme color globally');
+    }
   };
 
   const handleThemeChange = (mode) => {

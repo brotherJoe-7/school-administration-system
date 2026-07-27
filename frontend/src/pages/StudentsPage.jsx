@@ -4,7 +4,7 @@ import API from '../api/axios';
 import ProtectedLayout from '../components/ProtectedLayout';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { getAbbr, programLabel } from '../utils/programs';
+import { getAbbr, programLabel, getProgramDuration } from '../utils/programs';
 
 
 const StatusBadge = ({ status }) => {
@@ -672,7 +672,8 @@ export default function StudentsPage() {
                       <div style={{ fontSize: '12px', fontWeight: 700, color: '#dc2626' }}>
                         {(() => {
                           const enrollYear = new Date(idCardStudent.created_at || Date.now()).getFullYear();
-                          const yearsRemaining = Math.max(0, idCardStudent.year_of_study ? (4 - (idCardStudent.year_of_study - 1)) : 4);
+                          const duration = getProgramDuration(idCardStudent.program);
+                          const yearsRemaining = Math.max(0, idCardStudent.year_of_study ? (duration - (idCardStudent.year_of_study - 1)) : duration);
                           return `31 Jul ${enrollYear + yearsRemaining}`;
                         })()}
                       </div>

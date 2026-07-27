@@ -26,3 +26,17 @@ export function programLabel(program) {
   const abbr = PROGRAM_ABBR[program];
   return abbr ? `${abbr} — ${program}` : program;
 }
+
+/**
+ * Estimate the standard duration in years for a given program.
+ */
+export function getProgramDuration(program) {
+  if (!program) return 4;
+  const p = program.toLowerCase();
+  if (p.includes('primary')) return 6;
+  if (p.includes('jss') || p.includes('junior')) return 3;
+  if (p.includes('sss') || p.includes('senior')) return 3;
+  if (p.includes('diploma') || p.includes('hnd')) return 2;
+  if (p.includes('degree') || p.includes('b.sc') || p.includes('bsc') || p.includes('bba')) return 4;
+  return 4; // Default fallback
+}
