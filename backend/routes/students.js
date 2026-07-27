@@ -109,6 +109,7 @@ router.get('/:id', authenticate, async (req, res) => {
 
 // POST /api/students/register - Admin creates a new student
 router.post('/register', authenticate, authorize('admin'), async (req, res) => {
+  const {
     first_name, last_name, email, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,
     emergency_contact_name, emergency_contact_phone,
