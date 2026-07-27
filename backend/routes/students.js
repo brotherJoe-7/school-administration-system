@@ -137,7 +137,7 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
       }
     });
     // Auto-generate ID using custom tenant prefix
-    const tenant = await Tenant.findOne({ subdomain: req.tenant_id });
+    const tenant = await Tenant.findOne({ _id: req.tenant_id });
     const prefix = tenant && tenant.id_prefix ? tenant.id_prefix : '90500';
     const student_number = `${prefix}${String(count + 1).padStart(4, '0')}`;
 

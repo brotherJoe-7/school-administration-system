@@ -602,7 +602,7 @@ export default function StudentsPage() {
                 {/* LEFT PANEL */}
                 <div style={{
                   width: '170px', flexShrink: 0,
-                  background: `linear-gradient(160deg, ${schoolColor}dd 0%, ${schoolColor} 60%, ${schoolColor}bb 100%)`,
+                  backgroundColor: schoolColor,
                   display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
                   padding: '20px 14px', gap: '12px', position: 'relative'
