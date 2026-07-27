@@ -7,7 +7,7 @@ const tenantMiddleware = require('../middleware/tenantMiddleware');
 // GET /api/settings/tenant
 router.get('/tenant', authenticate, tenantMiddleware, async (req, res) => {
   try {
-    const tenant = await Tenant.findOne({ _id: req.tenant_id }).select('id_prefix custom_theme');
+    const tenant = await Tenant.findOne({ _id: req.tenant_id }).select('id_prefix custom_theme name');
     res.json({ success: true, data: tenant });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch tenant settings' });

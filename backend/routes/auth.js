@@ -52,6 +52,7 @@ router.post('/login', loginValidation, async (req, res) => {
       email: user.email,
       role: userRole,
       name: user.full_name || `${user.first_name} ${user.last_name}`,
+      tenant_id: user.tenant_id ? user.tenant_id.toString() : null,
     };
 
     const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {

@@ -30,6 +30,9 @@ export const AuthProvider = ({ children }) => {
     const { data } = await API.post('/auth/login', { email, password });
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
+    if (data.user.tenant_id) {
+      localStorage.setItem('tenant_id', data.user.tenant_id);
+    }
     setToken(data.token);
     setUser(data.user);
     return data.user;
@@ -38,6 +41,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('tenant_id');
     setToken(null);
     setUser(null);
   };
