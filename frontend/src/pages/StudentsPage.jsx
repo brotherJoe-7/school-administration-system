@@ -43,6 +43,7 @@ export default function StudentsPage() {
   const [transferLoading, setTransferLoading] = useState(false);
 
   const [idCardStudent, setIdCardStudent] = useState(null);
+  const [schoolColor, setSchoolColor] = useState('#4f46e5');
   const [openMenuId, setOpenMenuId] = useState(null);
 
   // Close dropdown when clicking outside
@@ -56,6 +57,15 @@ export default function StudentsPage() {
     API.get('/classes/programs')
       .then(res => setProgramsList(res.data.data || []))
       .catch(() => setProgramsList(['BIT','BBIT','BSEM','BICT','DAT','BSc CS','BBA MIS','Diploma ICT','HND Computing']));
+  }, []);
+
+  useEffect(() => {
+    API.get('/settings/tenant')
+      .then(res => {
+        const color = res.data?.data?.custom_theme?.primary_color;
+        if (color && color !== '#000000') setSchoolColor(color);
+      })
+      .catch(() => {});
   }, []);
 
   const fetchStudents = async () => {
@@ -592,7 +602,7 @@ export default function StudentsPage() {
                 {/* LEFT PANEL */}
                 <div style={{
                   width: '170px', flexShrink: 0,
-                  background: 'linear-gradient(160deg, #4f46e5 0%, #7c3aed 60%, #a855f7 100%)',
+                  background: `linear-gradient(160deg, ${schoolColor}dd 0%, ${schoolColor} 60%, ${schoolColor}bb 100%)`,
                   display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
                   padding: '20px 14px', gap: '12px', position: 'relative'
@@ -654,8 +664,8 @@ export default function StudentsPage() {
                       <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>{new Date(idCardStudent.created_at || Date.now()).getFullYear()}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Blood Group</div>
-                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>{idCardStudent.blood_group || 'O+'}</div>
+                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Nationality</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>{idCardStudent.nationality || 'N/A'}</div>
                     </div>
                     <div>
                       <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Valid Until</div>
