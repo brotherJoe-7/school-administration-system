@@ -570,94 +570,124 @@ export default function StudentsPage() {
       {/* ID Card Modal */}
       {idCardStudent && (
         <div className="modal-overlay" onClick={() => setIdCardStudent(null)}>
-          <div className="modal-box" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+          <div className="modal-box" style={{ maxWidth: '560px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>Student ID Card</h3>
-              <button className="btn btn-secondary btn-sm" onClick={() => setIdCardStudent(null)}>x</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => setIdCardStudent(null)}>✕</button>
             </div>
             <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+              {/* ── Landscape ID Card ── */}
               <div id="id-card-content" style={{
-                width: '320px', height: '480px', background: '#fff', color: '#000', borderRadius: '12px',
-                padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.1)', position: 'relative', border: '1px solid #e5e7eb',
+                width: '500px', height: '300px',
+                background: '#fff', color: '#000',
+                borderRadius: '14px',
+                display: 'flex', flexDirection: 'row',
+                boxShadow: '0 6px 24px rgba(0,0,0,0.15)',
+                border: '1px solid #e5e7eb',
+                overflow: 'hidden',
                 fontFamily: 'system-ui, -apple-system, sans-serif'
               }}>
-                {/* Header Pattern */}
+
+                {/* LEFT PANEL */}
                 <div style={{
-                  position: 'absolute', top: 0, left: 0, right: 0, height: '120px',
-                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
-                  borderRadius: '12px 12px 0 0', zIndex: 0
-                }} />
-                
-                {/* School Name */}
-                <div style={{ zIndex: 1, color: '#fff', fontSize: '18px', fontWeight: 800, marginTop: '10px', textAlign: 'center', letterSpacing: '1px' }}>
-                  STUDENT ID CARD
-                </div>
-                
-                {/* Profile Picture */}
-                <div style={{
-                  zIndex: 1, width: '120px', height: '120px', borderRadius: '50%',
-                  background: '#f3f4f6', border: '4px solid #fff', marginTop: '20px',
-                  overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                  width: '170px', flexShrink: 0,
+                  background: 'linear-gradient(160deg, #4f46e5 0%, #7c3aed 60%, #a855f7 100%)',
+                  display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  padding: '20px 14px', gap: '12px', position: 'relative'
                 }}>
-                  {idCardStudent.profile_picture ? (
-                    <img src={idCardStudent.profile_picture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <span style={{ fontSize: '40px', color: '#cbd5e1' }}>👤</span>
-                  )}
-                </div>
+                  {/* Decorative circles */}
+                  <div style={{ position: 'absolute', top: '-20px', left: '-20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
+                  <div style={{ position: 'absolute', bottom: '-30px', right: '-30px', width: '110px', height: '110px', borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
 
-                {/* Details */}
-                <div style={{ zIndex: 1, marginTop: '20px', textAlign: 'center', width: '100%' }}>
-                  <h2 style={{ margin: '0 0 4px 0', fontSize: '22px', fontWeight: 700, color: '#111827' }}>
-                    {idCardStudent.first_name} {idCardStudent.last_name}
-                  </h2>
-                  <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280', fontWeight: 500 }}>
-                    {getAbbr(idCardStudent.program) || 'Student'}
-                  </p>
+                  {/* Photo */}
+                  <div style={{
+                    width: '90px', height: '90px', borderRadius: '50%',
+                    background: '#ddd6fe', border: '3px solid rgba(255,255,255,0.8)',
+                    overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.2)', flexShrink: 0
+                  }}>
+                    {idCardStudent.profile_picture ? (
+                      <img src={idCardStudent.profile_picture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: '32px' }}>👤</span>
+                    )}
+                  </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left', background: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #f3f4f6' }}>
-                    <div>
-                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>ID Number</div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{idCardStudent.student_number}</div>
+                  {/* Name */}
+                  <div style={{ textAlign: 'center', zIndex: 1 }}>
+                    <div style={{ color: '#fff', fontSize: '13px', fontWeight: 700, lineHeight: 1.2 }}>
+                      {idCardStudent.first_name}<br />{idCardStudent.last_name}
                     </div>
-                    <div>
-                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Enrolled</div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{new Date(idCardStudent.created_at || Date.now()).getFullYear()}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DOB</div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{idCardStudent.date_of_birth ? new Date(idCardStudent.date_of_birth).toLocaleDateString() : 'N/A'}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Blood Group</div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{idCardStudent.blood_group || 'O+'}</div>
-                    </div>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Valid Until</div>
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#dc2626' }}>
-                        {(() => {
-                          const enrollYear = new Date(idCardStudent.created_at || Date.now()).getFullYear();
-                          const yearsRemaining = Math.max(0, (idCardStudent.year_of_study ? (4 - (idCardStudent.year_of_study - 1)) : 4));
-                          const expiryYear = enrollYear + yearsRemaining;
-                          return `31 July ${expiryYear}`;
-                        })()}
-                      </div>
+                    <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '10px', marginTop: '4px', fontWeight: 500 }}>
+                      {getAbbr(idCardStudent.program) || 'STUDENT'}
                     </div>
                   </div>
                 </div>
 
-                {/* Barcode Mock */}
-                <div style={{ zIndex: 1, marginTop: 'auto', marginBottom: '10px', width: '80%', height: '30px', background: 'repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px, #000 4px, #000 5px, #fff 5px, #fff 8px, #000 8px, #000 12px, #fff 12px, #fff 14px)', opacity: 0.8 }} />
+                {/* RIGHT PANEL */}
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 18px' }}>
+
+                  {/* Header */}
+                  <div style={{ borderBottom: '2px solid #4f46e5', paddingBottom: '8px', marginBottom: '10px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#4f46e5', letterSpacing: '2px', textTransform: 'uppercase' }}>Student Identity Card</div>
+                    <div style={{ fontSize: '9px', color: '#9ca3af', letterSpacing: '0.5px' }}>School Administration System</div>
+                  </div>
+
+                  {/* Details Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 14px', flex: 1 }}>
+                    <div>
+                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Student ID</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>{idCardStudent.student_number}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Year of Study</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>Year {idCardStudent.year_of_study || 1}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Date of Birth</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>{idCardStudent.date_of_birth ? new Date(idCardStudent.date_of_birth).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Enrolled</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>{new Date(idCardStudent.created_at || Date.now()).getFullYear()}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Blood Group</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#111827' }}>{idCardStudent.blood_group || 'O+'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '8px', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '1px' }}>Valid Until</div>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#dc2626' }}>
+                        {(() => {
+                          const enrollYear = new Date(idCardStudent.created_at || Date.now()).getFullYear();
+                          const yearsRemaining = Math.max(0, idCardStudent.year_of_study ? (4 - (idCardStudent.year_of_study - 1)) : 4);
+                          return `31 Jul ${enrollYear + yearsRemaining}`;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Barcode */}
+                  <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                    <div style={{ width: '100%', height: '24px', background: 'repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px, #000 4px, #000 5px, #fff 5px, #fff 8px, #000 8px, #000 12px, #fff 12px, #fff 14px)', borderRadius: '2px', opacity: 0.85 }} />
+                    <div style={{ fontSize: '7px', color: '#9ca3af', letterSpacing: '2px', textAlign: 'center' }}>{idCardStudent.student_number}</div>
+                  </div>
+                </div>
               </div>
 
+              {/* Print Button */}
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px', width: '100%' }}>
                 <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => {
                   const printContent = document.getElementById('id-card-content');
-                  const windowPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
-                  windowPrint.document.write('<html><head><title>Print ID Card</title>');
-                  windowPrint.document.write('<style>@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } } body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; }</style>');
+                  const windowPrint = window.open('', '', 'left=0,top=0,width=900,height=700,toolbar=0,scrollbars=0,status=0');
+                  windowPrint.document.write('<html><head><title>Student ID Card</title>');
+                  windowPrint.document.write('<style>');
+                  windowPrint.document.write('@page { size: landscape; margin: 0.5cm; }');
+                  windowPrint.document.write('@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }');
+                  windowPrint.document.write('body { font-family: system-ui, -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #f3f4f6; }');
+                  windowPrint.document.write('</style>');
                   windowPrint.document.write('</head><body>');
                   windowPrint.document.write(printContent.outerHTML);
                   windowPrint.document.write('</body></html>');
@@ -668,7 +698,7 @@ export default function StudentsPage() {
                     windowPrint.close();
                   }, 250);
                 }}>
-                  Print ID Card
+                  🖨️ Print ID Card
                 </button>
               </div>
             </div>
@@ -678,3 +708,4 @@ export default function StudentsPage() {
     </ProtectedLayout>
   );
 }
+
