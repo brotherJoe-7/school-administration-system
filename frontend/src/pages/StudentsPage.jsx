@@ -634,6 +634,17 @@ export default function StudentsPage() {
                       <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Blood Group</div>
                       <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{idCardStudent.blood_group || 'O+'}</div>
                     </div>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Valid Until</div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#dc2626' }}>
+                        {(() => {
+                          const enrollYear = new Date(idCardStudent.created_at || Date.now()).getFullYear();
+                          const yearsRemaining = Math.max(0, (idCardStudent.year_of_study ? (4 - (idCardStudent.year_of_study - 1)) : 4));
+                          const expiryYear = enrollYear + yearsRemaining;
+                          return `31 July ${expiryYear}`;
+                        })()}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
