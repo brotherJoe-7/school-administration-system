@@ -11,6 +11,7 @@ const StudentSchema = new mongoose.Schema({
   password_hash: { type: String, required: true },
   date_of_birth: { type: Date },
   gender: { type: String, enum: ['male', 'female', 'other', 'prefer_not_to_say'] },
+  profile_picture: { type: String },
   phone: { type: String },
   address: { type: String },
   nationality: { type: String, default: 'Sierra Leonean' },

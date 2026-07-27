@@ -42,6 +42,7 @@ export default function StudentsPage() {
   const [transferForm, setTransferForm] = useState({ destination: '' });
   const [transferLoading, setTransferLoading] = useState(false);
 
+  const [idCardStudent, setIdCardStudent] = useState(null);
   const [openMenuId, setOpenMenuId] = useState(null);
 
   // Close dropdown when clicking outside
@@ -240,6 +241,7 @@ export default function StudentsPage() {
             <table className="data-table">
               <thead>
                 <tr>
+                  <th>Photo</th>
                   <th>Student Number</th>
                   <th>Name</th>
                   <th>Email</th>
@@ -252,6 +254,15 @@ export default function StudentsPage() {
               <tbody>
                 {students.map(s => (
                   <tr key={s.id}>
+                    <td>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: 'var(--color-bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--color-border)' }}>
+                        {s.profile_picture ? (
+                          <img src={s.profile_picture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>N/A</span>
+                        )}
+                      </div>
+                    </td>
                     <td><code style={{ color:'var(--color-gold)', fontSize:'12px' }}>{s.student_number}</code></td>
                     <td style={{ color:'#fff', fontWeight:600 }}>{s.first_name} {s.last_name}</td>
                     <td>{s.email}</td>
@@ -268,6 +279,7 @@ export default function StudentsPage() {
                       {/* Desktop View: Horizontal Buttons */}
                       <div className="desktop-only" style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
                         <Link to={`/reports/transcript/${s.id}`} className="btn btn-secondary btn-sm">Transcript</Link>
+                        <button className="btn btn-secondary btn-sm" onClick={() => setIdCardStudent(s)}>ID Card</button>
                         {user?.role === 'admin' && (
                           <>
                             <button className="btn btn-secondary btn-sm" onClick={() => openPayments(s)}>Payments</button>
@@ -298,13 +310,14 @@ export default function StudentsPage() {
                         </button>
                         
                         {openMenuId === s.id && (
-                          <div style={{
+                              <div style={{
                             position: 'absolute', right: 0, top: '100%', marginTop: '4px',
                             background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)',
                             borderRadius: '8px', padding: '6px', minWidth: '160px', zIndex: 50,
                             boxShadow: '0 4px 12px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', gap: '2px'
                           }}>
                             <Link to={`/reports/transcript/${s.id}`} style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--color-text-primary)', textDecoration: 'none', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => setOpenMenuId(null)}>Transcript</Link>
+                            <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-text-primary)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); setIdCardStudent(s); }}>ID Card</button>
                             {user?.role === 'admin' && (
                               <>
                                 <button style={{ textAlign: 'left', padding: '8px 12px', fontSize: '12px', background: 'none', border: 'none', color: 'var(--color-text-primary)', cursor: 'pointer', borderRadius: '4px' }} className="hover-bg-secondary" onClick={() => { setOpenMenuId(null); openPayments(s); }}>Payments</button>
@@ -549,6 +562,104 @@ export default function StudentsPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ID Card Modal */}
+      {idCardStudent && (
+        <div className="modal-overlay" onClick={() => setIdCardStudent(null)}>
+          <div className="modal-box" style={{ maxWidth: '400px' }} onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Student ID Card</h3>
+              <button className="btn btn-secondary btn-sm" onClick={() => setIdCardStudent(null)}>x</button>
+            </div>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div id="id-card-content" style={{
+                width: '320px', height: '480px', background: '#fff', color: '#000', borderRadius: '12px',
+                padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)', position: 'relative', border: '1px solid #e5e7eb',
+                fontFamily: 'system-ui, -apple-system, sans-serif'
+              }}>
+                {/* Header Pattern */}
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, height: '120px',
+                  background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+                  borderRadius: '12px 12px 0 0', zIndex: 0
+                }} />
+                
+                {/* School Name */}
+                <div style={{ zIndex: 1, color: '#fff', fontSize: '18px', fontWeight: 800, marginTop: '10px', textAlign: 'center', letterSpacing: '1px' }}>
+                  STUDENT ID CARD
+                </div>
+                
+                {/* Profile Picture */}
+                <div style={{
+                  zIndex: 1, width: '120px', height: '120px', borderRadius: '50%',
+                  background: '#f3f4f6', border: '4px solid #fff', marginTop: '20px',
+                  overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                  {idCardStudent.profile_picture ? (
+                    <img src={idCardStudent.profile_picture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ fontSize: '40px', color: '#cbd5e1' }}>👤</span>
+                  )}
+                </div>
+
+                {/* Details */}
+                <div style={{ zIndex: 1, marginTop: '20px', textAlign: 'center', width: '100%' }}>
+                  <h2 style={{ margin: '0 0 4px 0', fontSize: '22px', fontWeight: 700, color: '#111827' }}>
+                    {idCardStudent.first_name} {idCardStudent.last_name}
+                  </h2>
+                  <p style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#6b7280', fontWeight: 500 }}>
+                    {getAbbr(idCardStudent.program) || 'Student'}
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', textAlign: 'left', background: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #f3f4f6' }}>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>ID Number</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{idCardStudent.student_number}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Enrolled</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{new Date(idCardStudent.created_at || Date.now()).getFullYear()}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>DOB</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{idCardStudent.date_of_birth ? new Date(idCardStudent.date_of_birth).toLocaleDateString() : 'N/A'}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '10px', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Blood Group</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#111827' }}>{idCardStudent.blood_group || 'O+'}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Barcode Mock */}
+                <div style={{ zIndex: 1, marginTop: 'auto', marginBottom: '10px', width: '80%', height: '30px', background: 'repeating-linear-gradient(90deg, #000, #000 2px, #fff 2px, #fff 4px, #000 4px, #000 5px, #fff 5px, #fff 8px, #000 8px, #000 12px, #fff 12px, #fff 14px)', opacity: 0.8 }} />
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px', width: '100%' }}>
+                <button className="btn btn-primary" style={{ width: '100%' }} onClick={() => {
+                  const printContent = document.getElementById('id-card-content');
+                  const windowPrint = window.open('', '', 'left=0,top=0,width=800,height=900,toolbar=0,scrollbars=0,status=0');
+                  windowPrint.document.write('<html><head><title>Print ID Card</title>');
+                  windowPrint.document.write('<style>@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } } body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; }</style>');
+                  windowPrint.document.write('</head><body>');
+                  windowPrint.document.write(printContent.outerHTML);
+                  windowPrint.document.write('</body></html>');
+                  windowPrint.document.close();
+                  windowPrint.focus();
+                  setTimeout(() => {
+                    windowPrint.print();
+                    windowPrint.close();
+                  }, 250);
+                }}>
+                  Print ID Card
+                </button>
+              </div>
             </div>
           </div>
         </div>

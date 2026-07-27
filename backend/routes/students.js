@@ -109,11 +109,10 @@ router.get('/:id', authenticate, async (req, res) => {
 
 // POST /api/students/register - Admin creates a new student
 router.post('/register', authenticate, authorize('admin'), async (req, res) => {
-  const {
     first_name, last_name, email, date_of_birth, gender,
     phone, address, program, year_of_study, nationality,
     emergency_contact_name, emergency_contact_phone,
-    national_id, global_tracking_id
+    national_id, global_tracking_id, profile_picture
   } = req.body;
 
   if (!first_name || !last_name || !program) {
@@ -160,6 +159,7 @@ router.post('/register', authenticate, authorize('admin'), async (req, res) => {
       password_hash: 'pending',
       date_of_birth: sanitize(date_of_birth),
       gender: sanitize(gender),
+      profile_picture: sanitize(profile_picture),
       phone: sanitize(phone),
       address: sanitize(address),
       nationality: sanitize(nationality),
@@ -239,7 +239,7 @@ router.put('/complete-setup', authenticate, async (req, res) => {
 
 // PUT /api/students/:id (admin update)
 router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
-  const { first_name, last_name, email, phone, address, status, transfer_destination } = req.body;
+  const { first_name, last_name, email, phone, address, status, transfer_destination, profile_picture } = req.body;
   const AuditLog = require('../models/AuditLog');
   try {
     // Fetch the current record first so we can write a clean audit note
@@ -254,6 +254,7 @@ router.put('/:id', authenticate, authorize('admin'), async (req, res) => {
     if (address    !== undefined) updateFields.address    = address;
     if (status     !== undefined) updateFields.status     = status;
     if (transfer_destination !== undefined) updateFields.transfer_destination = transfer_destination;
+    if (profile_picture !== undefined) updateFields.profile_picture = profile_picture;
 
     await Student.findByIdAndUpdate(req.params.id, updateFields);
 
